@@ -1,0 +1,2 @@
+class MaxBoundError(Exception):
+	pass
