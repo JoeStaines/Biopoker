@@ -15,6 +15,7 @@ class UI():
 		self.playArea.fill(self.bgColour)
 		
 		self.layoutTest()
+		pygame.display.set_caption('Biopoker')
 		
 	def setDisplay(self):
 		self.window = pygame.display.set_mode((UI.wW, UI.wH), 0, 32)
