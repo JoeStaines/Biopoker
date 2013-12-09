@@ -84,21 +84,35 @@ class TestRemovePlayerFromList(TestTableSetUp):
 		self.assertTrue(self.table.playerList[4] == self.p5)
 		self.assertTrue(self.table.playerList[5] == self.p6)
 		
+class TestAddSidePot(TestTableSetUp):
+	def testRaiseExceptionWhenNoSidePot(self):
+		with self.assertRaises(IndexError):
+			self.table.pots[1]
+			
+	def testAddSidePot(self):
+		self.table.addSidePot()
+		self.assertTrue(self.table.pots[1] == 0)
+		
 class TestAddToPot(TestTableSetUp):
 	def testAddToPot(self):
-		self.table.addToPot(200)
-		self.assertTrue(self.table.pot == 200)
+		self.table.addToPot(200, 0)
+		self.assertTrue(self.table.pots[0] == 200)
 		
 	def testAddToPotMultiple(self):
-		self.table.addToPot(200)
-		self.table.addToPot(200)
-		self.assertTrue(self.table.pot == 400)
+		self.table.addToPot(200, 0)
+		self.table.addToPot(200, 0)
+		self.assertTrue(self.table.pots[0] == 400)
+		
+	def testAddToSidePot(self):
+		self.table.addSidePot()
+		self.table.addToPot(200, 1)
+		self.assertTrue(self.table.pots[1] == 200)
 		
 class TestClearPot(TestTableSetUp):
 	def testClearPot(self):
-		self.table.addToPot(200)
+		self.table.addToPot(200, 0)
 		self.table.clearPot()
-		self.assertTrue(self.table.pot == 0)
+		self.assertTrue(self.table.pots[0] == 0)
 		
 class TestComparePlayerBet(TestTableSetUp):
 	def setUp(self):
@@ -119,7 +133,7 @@ class TestComparePlayerBet(TestTableSetUp):
 		self.p.betAmount = 200
 		self.table.currentBet = 100
 		self.assertTrue(self.table.comparePlayerBet(self.p) == -1)
-		
+"""		
 class TestCollectAnte(TestTableSetUp):
 	def setUp(self):
 		TestTableSetUp.setUp(self)
@@ -156,7 +170,7 @@ class TestCollectAnte(TestTableSetUp):
 		self.assertTrue(self.p2.money == 995)
 		self.assertTrue(self.p3.money == 995)
 		self.assertTrue(self.p4.money == 995)
-		
+"""	
 class TestAssignDealer(TestTableSetUp):
 	def testTwoPlayersAssignDealer(self):
 		self.table.curDealerSeatNo = 0

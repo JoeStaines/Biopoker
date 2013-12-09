@@ -6,7 +6,7 @@ class Table():
 		self.playerList = [None, None, None, None, None, None]
 		self.deck = []
 		self.reinitDeck()
-		self.pot = 0
+		self.pots = [0]
 		self.currentBet = 0
 		self.ante = 0
 		self.bigBlind = 0
@@ -35,11 +35,14 @@ class Table():
 		self.deck = range(52)
 		random.shuffle(self.deck)
 		
-	def addToPot(self, amount):
-		self.pot = self.pot + amount
+	def addSidePot(self):
+		self.pots.append(0)
+		
+	def addToPot(self, amount, index):
+		self.pots[index] = self.pots[index] + amount
 		
 	def clearPot(self):
-		self.pot = 0
+		self.pots = [0]
 		
 	def comparePlayerBet(self, player):
 		if player.betAmount < self.currentBet:
@@ -63,5 +66,3 @@ class Table():
 				return
 				
 	# Have to determine whether someone has enough money to pay for blinds, if not then initiate main pot/side pot
-		
-		
