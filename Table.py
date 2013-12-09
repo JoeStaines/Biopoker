@@ -53,10 +53,26 @@ class Table():
 			return -1
 			
 	def collectAnte(self):
+		smallest = self._findSmallestMoney()
+					
+		if smallest < self.ante:
+			newAnte = smallest
+		else:
+			newAnte = self.ante
+	
 		for x in self.playerList:
 			if x != None:
-				x.removeMoney(self.ante)
-				self.pot = self.pot + self.ante
+				x.removeMoney(newAnte)
+				self.pots[0] = self.pots[0] + newAnte
+				
+	def _findSmallestMoney(self):
+		smallest = 99999999 # Just some high number
+		for x in self.playerList:
+			if x != None:
+				if x.money < smallest:
+					smallest = x.money
+					
+		return smallest
 	
 	def assignDealer(self):
 		for n in range(1,6):
@@ -66,3 +82,11 @@ class Table():
 				return
 				
 	# Have to determine whether someone has enough money to pay for blinds, if not then initiate main pot/side pot
+	
+	"""
+	if playerbet < potbet
+	listOfPlayers = getPlayersInPot(potIndex)
+	potBetFotThisIndex = playerbet
+	pots[potIndex:potIndex] = playerbet * len(listOfPlayers)
+	notifyPlayersPlusPotIndex(listOfPlayers)
+	"""

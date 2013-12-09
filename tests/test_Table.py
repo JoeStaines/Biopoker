@@ -133,7 +133,16 @@ class TestComparePlayerBet(TestTableSetUp):
 		self.p.betAmount = 200
 		self.table.currentBet = 100
 		self.assertTrue(self.table.comparePlayerBet(self.p) == -1)
-"""		
+	
+class TestFindSmallestMoney(TestTableSetUp):
+	def testFindSmallestMoney(self):
+		self.p1.money = 10
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table.addPlayer(self.p3)
+		
+		self.assertTrue(self.table._findSmallestMoney() == 10)
+	
 class TestCollectAnte(TestTableSetUp):
 	def setUp(self):
 		TestTableSetUp.setUp(self)
@@ -144,7 +153,7 @@ class TestCollectAnte(TestTableSetUp):
 		self.table.addPlayer(self.p2)
 		self.table.collectAnte()
 		
-		self.assertTrue(self.table.pot == 10)
+		self.assertTrue(self.table.pots[0] == 10)
 		self.assertTrue(self.p1.money == 995)
 		self.assertTrue(self.p2.money == 995)
 		
@@ -154,7 +163,7 @@ class TestCollectAnte(TestTableSetUp):
 		self.table.addPlayer(self.p2)
 		self.table.collectAnte()
 		
-		self.assertTrue(self.table.pot == 20)
+		self.assertTrue(self.table.pots[0] == 20)
 		self.assertTrue(self.p1.money == 990)
 		self.assertTrue(self.p2.money == 990)
 		
@@ -165,12 +174,23 @@ class TestCollectAnte(TestTableSetUp):
 		self.table.addPlayer(self.p4)
 		self.table.collectAnte()
 		
-		self.assertTrue(self.table.pot == 20)
+		self.assertTrue(self.table.pots[0] == 20)
 		self.assertTrue(self.p1.money == 995)
 		self.assertTrue(self.p2.money == 995)
 		self.assertTrue(self.p3.money == 995)
 		self.assertTrue(self.p4.money == 995)
-"""	
+		
+	def testOnePlayerCannotPayAnte(self):
+		self.table.ante = 10
+		self.p1.money = 5
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table.collectAnte()
+		
+		self.assertTrue(self.table.pots[0] == 10)
+		self.assertTrue(self.p1.money == 0)
+		self.assertTrue(self.p2.money == 995)
+
 class TestAssignDealer(TestTableSetUp):
 	def testTwoPlayersAssignDealer(self):
 		self.table.curDealerSeatNo = 0
