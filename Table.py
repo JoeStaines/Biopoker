@@ -95,7 +95,10 @@ class Table():
 		return number
 	
 	def collectSmallBlind(self):
-		player, seatNo = self.findNthPlayerFromDealer(1)
+		if self.noOfPlayers() == 2:
+			player = self.playerList[self.curDealerSeatNo]
+		else:
+			player, seatNo = self.findNthPlayerFromDealer(1)
 		player.removeMoney(self.smallBlind)
 		self.pots[0] = self.pots[0] + self.smallBlind
 		

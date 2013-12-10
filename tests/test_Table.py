@@ -273,7 +273,7 @@ class TestNoOfPlayers(TestTableSetUp):
 			self.table.addPlayer(Player())
 			
 		self.assertTrue(self.table.noOfPlayers() == 3)
-"""		
+		
 class TestCollectSmallBlind(TestTableSetUp):
 	def setUp(self):
 		TestTableSetUp.setUp(self)
@@ -299,5 +299,19 @@ class TestCollectSmallBlind(TestTableSetUp):
 		self.assertTrue(self.table.pots[0] == 5)
 		self.assertTrue(self.p1.money == 995)
 		self.assertTrue(self.p2.money == 1000)
-		"""
+		
+	def testPlayerCannotPaySmallBlind(self):
+		self.table.smallBlind = 10
+		self.p2.money = 5
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table.addPlayer(self.p3)
+		self.table.collectSmallBlind()
+		
+		self.assertTrue(self.table.pots[0] == 5)
+		self.assertTrue(self.table.pots[1] == 0)
+		self.assertTrue(self.p1.money == 1000)
+		self.assertTrue(self.p2.money == 0)
+		self.assertTrue(self.p3.money == 1000)
+
 
