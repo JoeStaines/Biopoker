@@ -75,11 +75,20 @@ class Table():
 		return smallest
 	
 	def assignDealer(self):
-		for n in range(1,6):
-			index = (self.curDealerSeatNo + n) % 6
+		_, index = self.findNthPlayerFromDealer(1)
+		self.curDealerSeatNo = index
+	
+	def findNthPlayerFromDealer(self, n):
+		for i in range(1,6):
+			index = (self.curDealerSeatNo + i) % 6
 			if self.playerList[index] != None:
-				self.curDealerSeatNo = index
-				return
+				if n > 1:
+					n = n - 1
+				else:
+					return (self.playerList[index], index)
+	
+	#def collectSmallBlind():
+		
 				
 	# Have to determine whether someone has enough money to pay for blinds, if not then initiate main pot/side pot
 	
