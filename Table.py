@@ -87,7 +87,17 @@ class Table():
 				else:
 					return (self.playerList[index], index)
 	
-	#def collectSmallBlind():
+	def noOfPlayers(self):
+		number = 0
+		for n in range(6):
+			if self.playerList[n] != None:
+				number = number + 1
+		return number
+	
+	def collectSmallBlind(self):
+		player, seatNo = self.findNthPlayerFromDealer(1)
+		player.removeMoney(self.smallBlind)
+		self.pots[0] = self.pots[0] + self.smallBlind
 		
 				
 	# Have to determine whether someone has enough money to pay for blinds, if not then initiate main pot/side pot

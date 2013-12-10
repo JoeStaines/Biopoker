@@ -257,6 +257,22 @@ class TestFindNthPlayerFromDealer(TestTableSetUp):
 		self.table.curDealerSeatNo = 5
 		self.assertTrue(self.table.findNthPlayerFromDealer(2) == (self.p2, 1))
 		
+class TestNoOfPlayers(TestTableSetUp):
+	def testWithOnePlayer(self):
+		self.table.addPlayer(Player())
+		self.assertTrue(self.table.noOfPlayers() == 1)
+		
+	def testWithSixPlayers(self):
+		for i in range(6):
+			self.table.addPlayer(Player())
+			
+		self.assertTrue(self.table.noOfPlayers() == 6)
+		
+	def testWithThreePlayers(self):
+		for i in range(3):
+			self.table.addPlayer(Player())
+			
+		self.assertTrue(self.table.noOfPlayers() == 3)
 """		
 class TestCollectSmallBlind(TestTableSetUp):
 	def setUp(self):
@@ -273,5 +289,15 @@ class TestCollectSmallBlind(TestTableSetUp):
 		self.assertTrue(self.p1.money == 1000)
 		self.assertTrue(self.p2.money == 995)
 		self.assertTrue(self.p3.money == 1000)
-"""
+	
+	# Blinds are switched around when playing heads up
+	def testTwoPlayersCollect(self):
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table.collectSmallBlind()
+		
+		self.assertTrue(self.table.pots[0] == 5)
+		self.assertTrue(self.p1.money == 995)
+		self.assertTrue(self.p2.money == 1000)
+		"""
 
