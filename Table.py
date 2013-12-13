@@ -7,7 +7,8 @@ class Table():
 		self.deck = []
 		self.reinitDeck()
 		self.pots = [0]
-		self.currentBet = 0
+		self.potIndex = 0
+		self.currentBet = [0] # Bet for each pot if there are side pots
 		self.ante = 0
 		self.bigBlind = 0
 		self.smallBlind = 0
@@ -44,10 +45,10 @@ class Table():
 	def clearPot(self):
 		self.pots = [0]
 		
-	def comparePlayerBet(self, player):
-		if player.betAmount < self.currentBet:
+	def comparePlayerBet(self, player, i):
+		if player.betAmount[i] < self.currentBet[i]:
 			return 1
-		elif player.betAmount == self.currentBet:
+		elif player.betAmount[i] == self.currentBet[i]:
 			return 0
 		else:
 			return -1
@@ -95,12 +96,62 @@ class Table():
 		return number
 	
 	def collectSmallBlind(self):
+		self.currentBet[0] = self.smallBlind
 		if self.noOfPlayers() == 2:
 			player = self.playerList[self.curDealerSeatNo]
 		else:
 			player, seatNo = self.findNthPlayerFromDealer(1)
-		player.removeMoney(self.smallBlind)
-		self.pots[0] = self.pots[0] + self.smallBlind
+			
+		self.collectMoney(player, self.smallBlind)
+			
+	"""	
+		if player.money < self.smallBlind:
+			self.pots[self.potIndex:self.potIndex] = [player.money]
+			player.potContrib = self.potIndex
+			player.betAmount[self.potIndex] = player.money
+			player.money = 0
+			self.potIndex = self.potIndex + 1
+		else:
+			player.removeMoney(self.smallBlind)
+			self.pots[0] = self.pots[0] + self.smallBlind
+			player.potContrib = self.potIndex
+			player.betAmount[self.potIndex] = self.smallBlind
+	"""
+	
+	def collectBigBlind(self):
+		self.setBigBlindBetAmount()
+		if self.noOfPlayers() == 2:
+			player, seatNo = self.findNthPlayerFromDealer(1)
+		else:
+			player, seatNo = self.findNthPlayerFromDealer(2)
+		self.collectMoney(player, self.bigBlind)
+		self.setBigBlindBetAmount() # Need to do this again because even if blind cant be paid, 
+									# next player still has to pay full blind
+		
+	def setBigBlindBetAmount(self):
+		if self.potIndex > 0:
+			newbet = self.bigBlind - sum(self.currentBet)
+		else:
+			newbet = self.bigBlind
+		self.currentBet[self.potIndex] = newbet
+			
+	def collectMoney(self, player, amount):
+		for i in range(self.potIndex + 1):
+			if player.money < self.currentBet[i]:
+				self.pots[i:i] = [player.money]
+				#self.currentBet[i:
+				# Have to update currentBet here
+				player.potContrib = i
+				player.betAmount[i] = player.money
+				player.money = 0
+				self.potIndex = self.potIndex + 1
+				return
+			else:
+				player.removeMoney(self.currentBet[i])
+				self.pots[i] = self.pots[i] + self.currentBet[i]
+				player.potContrib = i
+				player.betAmount[i] = self.currentBet[i]
+				amount = amount - self.currentBet[i]
 		
 				
 	# Have to determine whether someone has enough money to pay for blinds, if not then initiate main pot/side pot

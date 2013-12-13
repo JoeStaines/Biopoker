@@ -4,7 +4,8 @@ class Player():
 		self.name = name
 		self.money = money
 		self.hand = []
-		self.betAmount = 0
+		self.betAmount = [0]
+		self.potContrib = -1
 		
 	def removeMoney(self, amount):
 		self.money = self.money - amount
