@@ -23,6 +23,13 @@ class Table():
 		# At this point exhausted the list and it's full of players, raise exception
 		raise MaxBoundError
 		
+	def getPlayers(self):
+		playerlist = []
+		for x in self.playerList:
+			if x != None:
+				playerlist.append(x)
+		return playerlist
+		
 	def _debugDirectAssign(self, player, pos):
 		self.playerList[pos] = player
 	
@@ -96,27 +103,26 @@ class Table():
 		return number
 	
 	def collectSmallBlind(self):
-		self.currentBet[0] = self.smallBlind
+		#self.currentBet[0] = self.smallBlind
 		if self.noOfPlayers() == 2:
 			player = self.playerList[self.curDealerSeatNo]
 		else:
 			player, seatNo = self.findNthPlayerFromDealer(1)
 			
-		self.collectMoney(player, self.smallBlind)
+		#self.collectMoney(player, self.smallBlind)
 			
-	"""	
 		if player.money < self.smallBlind:
 			self.pots[self.potIndex:self.potIndex] = [player.money]
+			self.currentBet[self.potIndex:self.potIndex] = [player.money]
 			player.potContrib = self.potIndex
-			player.betAmount[self.potIndex] = player.money
+			player.betAmount.append(player.money)
 			player.money = 0
 			self.potIndex = self.potIndex + 1
 		else:
 			player.removeMoney(self.smallBlind)
 			self.pots[0] = self.pots[0] + self.smallBlind
 			player.potContrib = self.potIndex
-			player.betAmount[self.potIndex] = self.smallBlind
-	"""
+			player.betAmount.append(self.smallBlind)
 	
 	def collectBigBlind(self):
 		self.setBigBlindBetAmount()
@@ -129,18 +135,17 @@ class Table():
 									# next player still has to pay full blind
 		
 	def setBigBlindBetAmount(self):
-		if self.potIndex > 0:
-			newbet = self.bigBlind - sum(self.currentBet)
-		else:
-			newbet = self.bigBlind
-		self.currentBet[self.potIndex] = newbet
+		if sum(self.currentBet) < self.bigBlind:
+			if self.potIndex > 0:
+				newbet = self.bigBlind - sum(self.currentBet)
+			else:
+				newbet = self.bigBlind
+			self.currentBet[self.potIndex] = newbet
 			
 	def collectMoney(self, player, amount):
 		for i in range(self.potIndex + 1):
 			if player.money < self.currentBet[i]:
-				self.pots[i:i] = [player.money]
-				#self.currentBet[i:
-				# Have to update currentBet here
+				self._slicePot(player.money, i)
 				player.potContrib = i
 				player.betAmount[i] = player.money
 				player.money = 0
@@ -150,8 +155,26 @@ class Table():
 				player.removeMoney(self.currentBet[i])
 				self.pots[i] = self.pots[i] + self.currentBet[i]
 				player.potContrib = i
-				player.betAmount[i] = self.currentBet[i]
+				player.betAmount.append(self.currentBet[i])
 				amount = amount - self.currentBet[i]
+				
+	def _slicePot(self, amount, i):
+		self.pots[i:i] = [amount]
+		self.pots[i+1] = 0 # Going to re-evaluate this soon
+		#print "Before: {0}".format(self.currentBet)
+		self.currentBet[i:i] = [amount]
+		self.currentBet[i+1] = self.currentBet[i+1] - self.currentBet[i]
+		#print "After : {0}".format(self.currentBet)
+		for x in self.getPlayers():
+			if x.potContrib >= i:
+				x.betAmount[i:i] = [amount]
+				x.betAmount[i+1] = x.betAmount[i+1] - x.betAmount[i]
+				self.pots[i] = self.pots[i] + amount
+				self.pots[i+1] = self.pots[i+1] + x.betAmount[i+1]
+				x.potContrib = x.potContrib + 1
+		self.potIndex = self.potIndex + 1
+		
+			
 		
 				
 	# Have to determine whether someone has enough money to pay for blinds, if not then initiate main pot/side pot
