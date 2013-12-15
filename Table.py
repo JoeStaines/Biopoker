@@ -125,6 +125,7 @@ class Table():
 			player.betAmount.append(self.smallBlind)
 	
 	def collectBigBlind(self):
+	
 		self.setBigBlindBetAmount()
 		if self.noOfPlayers() == 2:
 			player, seatNo = self.findNthPlayerFromDealer(1)
@@ -143,11 +144,12 @@ class Table():
 			self.currentBet[self.potIndex] = newbet
 			
 	def collectMoney(self, player, amount):
-		for i in range(self.potIndex + 1):
+		rangestart = player.potContrib if player.potContrib >= 0 else 0
+		for i in range(rangestart, self.potIndex + 1):
 			if player.money < self.currentBet[i]:
 				self._slicePot(player.money, i)
 				player.potContrib = i
-				player.betAmount[i] = player.money
+				player.betAmount.append(player.money)
 				player.money = 0
 				self.potIndex = self.potIndex + 1
 				return
@@ -167,13 +169,19 @@ class Table():
 		#print "After : {0}".format(self.currentBet)
 		for x in self.getPlayers():
 			if x.potContrib >= i:
-				x.betAmount[i:i] = [amount]
-				x.betAmount[i+1] = x.betAmount[i+1] - x.betAmount[i]
-				self.pots[i] = self.pots[i] + amount
+				playerBetAmount = x.betAmount[i]
+				x.betAmount[i:i] = [amount] if amount < playerBetAmount else [playerBetAmount]
+				x.betAmount[i+1] = playerBetAmount - x.betAmount[i]
+				self.pots[i] = self.pots[i] + x.betAmount[i]
 				self.pots[i+1] = self.pots[i+1] + x.betAmount[i+1]
 				x.potContrib = x.potContrib + 1
+				self._pruneBetAmount(x)
 		self.potIndex = self.potIndex + 1
 		
+	def _pruneBetAmount(self, player):
+		if player.betAmount[-1] == 0:
+			player.betAmount.pop()
+			player.potContrib = player.potContrib - 1
 			
 		
 				
