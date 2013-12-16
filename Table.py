@@ -148,6 +148,8 @@ class Table():
 				player.money = 0
 				return
 			else:
+				print player.name
+				print self.pots
 				player.removeMoney(self.currentBet[i])
 				self.pots[i] = self.pots[i] + self.currentBet[i]
 				player.betAmount.append(self.currentBet[i])
@@ -170,3 +172,7 @@ class Table():
 	def _pruneBetAmount(self, player):
 		if player.betAmount[-1] == 0:
 			player.betAmount.pop()
+			
+	def makeBet(self, player, amount):
+		self.collectMoney(player, amount)
+		

@@ -6,13 +6,13 @@ from ..CustomExceptions import *
 class TestTableSetUp(unittest.TestCase):
 	def setUp(self):
 		self.table = Table()
-		self.p1 = Player("", 1000)
-		self.p2 = Player("", 1000)
-		self.p3 = Player("", 1000)
-		self.p4 = Player("", 1000)
-		self.p5 = Player("", 1000)
-		self.p6 = Player("", 1000)
-		self.p7 = Player("", 1000)
+		self.p1 = Player("p1", 1000)
+		self.p2 = Player("p2", 1000)
+		self.p3 = Player("p3", 1000)
+		self.p4 = Player("p4", 1000)
+		self.p5 = Player("p5", 1000)
+		self.p6 = Player("p6", 1000)
+		self.p7 = Player("p7", 1000)
 
 class TestInitPlayerList(TestTableSetUp):
 	def testListLengthIsSix(self):
@@ -486,5 +486,23 @@ class TestCollectBigBlind(TestTableSetUp):
 		self.assertTrue(self.p3.money == 0)
 		self.assertTrue(self.p2.betAmount == [7])
 		self.assertTrue(self.p3.betAmount == [7, 8])
+		
+class TestMakeBet(TestTableSetUp):
+	def setUp(self):
+		TestTableSetUp.setUp(self)
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table.addPlayer(self.p3)
+		self.table.smallBlind = 5
+		self.table.bigBlind = 10
+		self.table.collectSmallBlind()
+		self.table.collectBigBlind()
+		
+	def testMakeNormalBet(self):
+		self.table.makeBet(self.p1, 10)
+		
+		self.assertTrue(self.table.pots == [25])
+		self.assertTrue(self.table.currentBet == [10])
+		self.assertTrue(self.p1.betAmount == [10])
 
 
