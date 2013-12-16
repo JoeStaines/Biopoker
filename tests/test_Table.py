@@ -246,29 +246,25 @@ class TestAssignDealer(TestTableSetUp):
 		
 		self.assertTrue(self.table.curDealerSeatNo == 5)
 		
-class TestFindNthPlayerFromDealer(TestTableSetUp):
+class TestFindNthPlayerFromSeat(TestTableSetUp):
 	def setUp(self):
 		TestTableSetUp.setUp(self)
 		self.table.addPlayer(self.p1)
 		self.table.addPlayer(self.p2)
 		self.table.addPlayer(self.p3)
 		self.table._debugDirectAssign(self.p4, 5)
-	
-	def testFindFirstPlayer(self):
-		self.table.curDealerSeatNo = 0
-		self.assertTrue(self.table.findNthPlayerFromDealer(1) == (self.p2, 1))
 		
-	def testFindFirstPlayerNewPosition(self):
-		self.table.curDealerSeatNo = 1
-		self.assertTrue(self.table.findNthPlayerFromDealer(1) == (self.p3, 2))
+	def testFindPlayerNextTo(self):
+		self.assertTrue(self.table.findNthPlayerFromSeat(0, 1) == (self.p2, 1))
+		
+	def testFindPlayerNextToNewPosition(self):
+		self.assertTrue(self.table.findNthPlayerFromSeat(1, 1) == (self.p3, 2))
 		
 	def testFindSecondPlayer(self):
-		self.table.curDealerSeatNo = 0
-		self.assertTrue(self.table.findNthPlayerFromDealer(2) == (self.p3, 2))
+		self.assertTrue(self.table.findNthPlayerFromSeat(0, 2) == (self.p3, 2))
 		
 	def testFindSecondPlayerLoopAround(self):
-		self.table.curDealerSeatNo = 5
-		self.assertTrue(self.table.findNthPlayerFromDealer(2) == (self.p2, 1))
+		self.assertTrue(self.table.findNthPlayerFromSeat(5, 2) == (self.p2, 1))
 		
 class TestNoOfPlayers(TestTableSetUp):
 	def testWithOnePlayer(self):

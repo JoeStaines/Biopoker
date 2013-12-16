@@ -82,12 +82,12 @@ class Table():
 		return smallest
 	
 	def assignDealer(self):
-		_, index = self.findNthPlayerFromDealer(1)
+		_, index = self.findNthPlayerFromSeat(self.curDealerSeatNo, 1)
 		self.curDealerSeatNo = index
-	
-	def findNthPlayerFromDealer(self, n):
+					
+	def findNthPlayerFromSeat(self, seat, n):
 		for i in range(1,6):
-			index = (self.curDealerSeatNo + i) % 6
+			index = (seat + i) % 6
 			if self.playerList[index] != None:
 				if n > 1:
 					n = n - 1
@@ -106,7 +106,7 @@ class Table():
 		if self.noOfPlayers() == 2:
 			player = self.playerList[self.curDealerSeatNo]
 		else:
-			player, seatNo = self.findNthPlayerFromDealer(1)
+			player, seatNo = self.findNthPlayerFromSeat(self.curDealerSeatNo, 1)
 			
 		#self.collectMoney(player, self.smallBlind)
 			
@@ -124,9 +124,9 @@ class Table():
 	
 		self.setBigBlindBetAmount()
 		if self.noOfPlayers() == 2:
-			player, seatNo = self.findNthPlayerFromDealer(1)
+			player, seatNo = self.findNthPlayerFromSeat(self.curDealerSeatNo, 1)
 		else:
-			player, seatNo = self.findNthPlayerFromDealer(2)
+			player, seatNo = self.findNthPlayerFromSeat(self.curDealerSeatNo, 2)
 		self.collectMoney(player, self.bigBlind)
 		self.setBigBlindBetAmount() # Need to do this again because even if blind cant be paid, 
 									# next player still has to pay full blind
@@ -170,15 +170,3 @@ class Table():
 	def _pruneBetAmount(self, player):
 		if player.betAmount[-1] == 0:
 			player.betAmount.pop()
-			
-		
-				
-	# Have to determine whether someone has enough money to pay for blinds, if not then initiate main pot/side pot
-	
-	"""
-	if playerbet < potbet
-	listOfPlayers = getPlayersInPot(potIndex)
-	potBetFotThisIndex = playerbet
-	pots[potIndex:potIndex] = playerbet * len(listOfPlayers)
-	notifyPlayersPlusPotIndex(listOfPlayers)
-	"""
