@@ -303,7 +303,6 @@ class TestCollectSmallBlind(TestTableSetUp):
 		self.assertTrue(self.p2.money == 995)
 		self.assertTrue(self.p3.money == 1000)
 		self.assertTrue(self.p2.betAmount[0] == 5)
-		self.assertTrue(self.p2.potContrib == 0)
 	
 	# Blinds are switched around when playing heads up
 	def testTwoPlayersCollect(self):
@@ -315,7 +314,6 @@ class TestCollectSmallBlind(TestTableSetUp):
 		self.assertTrue(self.p1.money == 995)
 		self.assertTrue(self.p2.money == 1000)
 		self.assertTrue(self.p1.betAmount[0] == 5)
-		self.assertTrue(self.p1.potContrib == 0)
 		
 	def testPlayerCannotPaySmallBlind(self):
 		self.table.smallBlind = 10
@@ -332,7 +330,6 @@ class TestCollectSmallBlind(TestTableSetUp):
 		self.assertTrue(self.p2.money == 0)
 		self.assertTrue(self.p3.money == 1000)
 		self.assertTrue(self.p2.betAmount[0] == 5)
-		self.assertTrue(self.p2.potContrib == 0)
 
 class TestSlicePot(TestTableSetUp):
 	def setUp(self):
@@ -342,10 +339,6 @@ class TestSlicePot(TestTableSetUp):
 		self.table.addPlayer(self.p3)
 		self.table.pots = [15, 20, 20]
 		self.table.currentBet = [5, 10, 20]
-		self.table.potIndex = 2
-		self.p1.potContrib = 0
-		self.p2.potContrib = 1
-		self.p3.potContrib = 2
 		self.p1.betAmount = [5]
 		self.p2.betAmount = [5, 10]
 		self.p3.betAmount = [5, 10, 20]
@@ -354,10 +347,6 @@ class TestSlicePot(TestTableSetUp):
 		self.table._slicePot(5, 1)
 		self.assertTrue(self.table.pots == [15, 15, 10, 20])
 		self.assertTrue(self.table.currentBet == [5, 5, 5, 20])
-		self.assertTrue(self.table.potIndex == 3)
-		self.assertTrue(self.p1.potContrib == 0)
-		self.assertTrue(self.p2.potContrib == 2)
-		self.assertTrue(self.p3.potContrib == 3)
 		self.assertTrue(self.p1.betAmount == [5])
 		self.assertTrue(self.p2.betAmount == [5, 5, 5])
 		self.assertTrue(self.p3.betAmount == [5, 5, 5, 20])
@@ -369,10 +358,6 @@ class TestSlicePot(TestTableSetUp):
 		self.table._slicePot(5, 1)
 		self.assertTrue(self.table.pots == [15, 15, 5, 20])
 		self.assertTrue(self.table.currentBet == [5, 5, 5, 20])
-		self.assertTrue(self.table.potIndex == 3)
-		self.assertTrue(self.p1.potContrib == 0)
-		self.assertTrue(self.p2.potContrib == 1)
-		self.assertTrue(self.p3.potContrib == 3)
 		self.assertTrue(self.p1.betAmount == [5])
 		self.assertTrue(self.p2.betAmount == [5, 5])
 		self.assertTrue(self.p3.betAmount == [5, 5, 5, 20])
@@ -384,10 +369,6 @@ class TestSlicePot(TestTableSetUp):
 		self.table._slicePot(7, 1)
 		self.assertTrue(self.table.pots == [15, 19, 3, 20])
 		self.assertTrue(self.table.currentBet == [5, 7, 3, 20])
-		self.assertTrue(self.table.potIndex == 3)
-		self.assertTrue(self.p1.potContrib == 0)
-		self.assertTrue(self.p2.potContrib == 1)
-		self.assertTrue(self.p3.potContrib == 3)
 		self.assertTrue(self.p1.betAmount == [5])
 		self.assertTrue(self.p2.betAmount == [5, 5])
 		self.assertTrue(self.p3.betAmount == [5, 7, 3, 20])
@@ -400,8 +381,8 @@ class TestSetBigBlindBetAmount(TestTableSetUp):
 		self.table.bigBlind = 10
 		
 	def testSetBigBlindBetAmount(self):
+		self.table.pots = [5,0]
 		self.table.currentBet = [5,0]
-		self.table.potIndex = 1
 		self.table.setBigBlindBetAmount()
 		
 		self.assertTrue(self.table.currentBet == [5,5])
@@ -426,9 +407,7 @@ class TestCollectBigBlind(TestTableSetUp):
 		self.assertTrue(self.p2.money == 995)
 		self.assertTrue(self.p3.money == 990)
 		self.assertTrue(self.p2.betAmount[0] == 5)
-		self.assertTrue(self.p2.potContrib == 0)
 		self.assertTrue(self.p3.betAmount[0] == 10)
-		self.assertTrue(self.p3.potContrib == 0)
 		
 	def testCSTBTwoPlayers(self):
 		self.table.addPlayer(self.p1)
@@ -441,9 +420,7 @@ class TestCollectBigBlind(TestTableSetUp):
 		self.assertTrue(self.p1.money == 995)
 		self.assertTrue(self.p2.money == 990)
 		self.assertTrue(self.p1.betAmount[0] == 5)
-		self.assertTrue(self.p1.potContrib == 0)
 		self.assertTrue(self.p2.betAmount[0] == 10)
-		self.assertTrue(self.p2.potContrib == 0)
 		
 	def testCSTBCantPaySmall(self):
 		self.table.smallBlind = 10
@@ -460,9 +437,7 @@ class TestCollectBigBlind(TestTableSetUp):
 		self.assertTrue(self.p2.money == 0)
 		self.assertTrue(self.p3.money == 980)
 		self.assertTrue(self.p2.betAmount == [5])
-		self.assertTrue(self.p2.potContrib == 0)
 		self.assertTrue(self.p3.betAmount == [5, 15])
-		self.assertTrue(self.p3.potContrib == 1)
 	
 	def testCSTBCantPayBig(self):
 		self.table.smallBlind = 10
@@ -479,9 +454,7 @@ class TestCollectBigBlind(TestTableSetUp):
 		self.assertTrue(self.p2.money == 990)
 		self.assertTrue(self.p3.money == 0)
 		self.assertTrue(self.p2.betAmount == [10])
-		self.assertTrue(self.p2.potContrib == 0)
 		self.assertTrue(self.p3.betAmount == [15])
-		self.assertTrue(self.p3.potContrib == 0)
 	
 	def testCSTBCantPayBigAndLessThanSmall(self):
 		self.table.smallBlind = 10
@@ -498,9 +471,7 @@ class TestCollectBigBlind(TestTableSetUp):
 		self.assertTrue(self.p2.money == 990)
 		self.assertTrue(self.p3.money == 0)
 		self.assertTrue(self.p2.betAmount == [5, 5])
-		self.assertTrue(self.p2.potContrib == 1)
 		self.assertTrue(self.p3.betAmount == [5])
-		self.assertTrue(self.p3.potContrib == 0)
 		
 	def testCSTBCantPayBigAndSmall(self):
 		self.table.smallBlind = 10
@@ -518,8 +489,6 @@ class TestCollectBigBlind(TestTableSetUp):
 		self.assertTrue(self.p2.money == 0)
 		self.assertTrue(self.p3.money == 0)
 		self.assertTrue(self.p2.betAmount == [7])
-		self.assertTrue(self.p2.potContrib == 0)
 		self.assertTrue(self.p3.betAmount == [7, 8])
-		self.assertTrue(self.p3.potContrib == 1)
 
 

@@ -7,7 +7,6 @@ class Table():
 		self.deck = []
 		self.reinitDeck()
 		self.pots = [0]
-		self.potIndex = 0
 		self.currentBet = [0] # Bet for each pot if there are side pots
 		self.ante = 0
 		self.bigBlind = 0
@@ -112,16 +111,13 @@ class Table():
 		#self.collectMoney(player, self.smallBlind)
 			
 		if player.money < self.smallBlind:
-			self.pots[self.potIndex:self.potIndex] = [player.money]
-			self.currentBet[self.potIndex:self.potIndex] = [player.money]
-			player.potContrib = self.potIndex
+			self.pots[-1:-1] = [player.money]
+			self.currentBet[-1:-1] = [player.money]
 			player.betAmount.append(player.money)
 			player.money = 0
-			self.potIndex = self.potIndex + 1
 		else:
 			player.removeMoney(self.smallBlind)
 			self.pots[0] = self.pots[0] + self.smallBlind
-			player.potContrib = self.potIndex
 			player.betAmount.append(self.smallBlind)
 	
 	def collectBigBlind(self):
@@ -137,51 +133,43 @@ class Table():
 		
 	def setBigBlindBetAmount(self):
 		if sum(self.currentBet) < self.bigBlind:
-			if self.potIndex > 0:
+			if len(self.pots) > 1:
 				newbet = self.bigBlind - sum(self.currentBet)
 			else:
 				newbet = self.bigBlind
-			self.currentBet[self.potIndex] = newbet
+			self.currentBet[-1] = newbet
 			
 	def collectMoney(self, player, amount):
-		rangestart = player.potContrib if player.potContrib >= 0 else 0
-		for i in range(rangestart, self.potIndex + 1):
+		rangestart = len(player.betAmount) if len(player.betAmount) >= 0 else 0
+		for i in range(rangestart, len(self.pots)):
 			if player.money < self.currentBet[i]:
 				self._slicePot(player.money, i)
-				player.potContrib = i
 				player.betAmount.append(player.money)
 				player.money = 0
-				self.potIndex = self.potIndex + 1
 				return
 			else:
 				player.removeMoney(self.currentBet[i])
 				self.pots[i] = self.pots[i] + self.currentBet[i]
-				player.potContrib = i
 				player.betAmount.append(self.currentBet[i])
 				amount = amount - self.currentBet[i]
 				
 	def _slicePot(self, amount, i):
 		self.pots[i:i] = [amount]
 		self.pots[i+1] = 0 # Going to re-evaluate this soon
-		#print "Before: {0}".format(self.currentBet)
 		self.currentBet[i:i] = [amount]
 		self.currentBet[i+1] = self.currentBet[i+1] - self.currentBet[i]
-		#print "After : {0}".format(self.currentBet)
 		for x in self.getPlayers():
-			if x.potContrib >= i:
+			if len(x.betAmount)-1 >= i:
 				playerBetAmount = x.betAmount[i]
 				x.betAmount[i:i] = [amount] if amount < playerBetAmount else [playerBetAmount]
 				x.betAmount[i+1] = playerBetAmount - x.betAmount[i]
 				self.pots[i] = self.pots[i] + x.betAmount[i]
 				self.pots[i+1] = self.pots[i+1] + x.betAmount[i+1]
-				x.potContrib = x.potContrib + 1
 				self._pruneBetAmount(x)
-		self.potIndex = self.potIndex + 1
 		
 	def _pruneBetAmount(self, player):
 		if player.betAmount[-1] == 0:
 			player.betAmount.pop()
-			player.potContrib = player.potContrib - 1
 			
 		
 				
