@@ -333,41 +333,63 @@ class TestSlicePot(TestTableSetUp):
 		self.table.addPlayer(self.p1)
 		self.table.addPlayer(self.p2)
 		self.table.addPlayer(self.p3)
-		self.table.pots = [15, 20, 20]
+		self.table.addPlayer(self.p4)
+		self.table.pots = [20, 30, 20]
 		self.table.currentBet = [5, 10, 20]
 		self.p1.betAmount = [5]
 		self.p2.betAmount = [5, 10]
 		self.p3.betAmount = [5, 10, 20]
+		self.p4.betAmount = [5, 10]
 		
 	def testSlicePot(self):
-		self.table._slicePot(5, 1)
-		self.assertTrue(self.table.pots == [15, 15, 10, 20])
-		self.assertTrue(self.table.currentBet == [5, 5, 5, 20])
+		self.p4.money = 5
+	
+		self.table._slicePot(5, 2, self.p4)
+		self.assertTrue(self.table.pots == [20, 30, 10, 15])
+		self.assertTrue(self.table.currentBet == [5, 10, 5, 15])
 		self.assertTrue(self.p1.betAmount == [5])
-		self.assertTrue(self.p2.betAmount == [5, 5, 5])
-		self.assertTrue(self.p3.betAmount == [5, 5, 5, 20])
+		self.assertTrue(self.p2.betAmount == [5, 10])
+		self.assertTrue(self.p3.betAmount == [5, 10, 5, 15])
+		self.assertTrue(self.p4.betAmount == [5, 10, 5])
 		
 	def testSlicePotBetAmountIntegrity(self):
-		self.table.pots = [15, 15, 20]
-		self.p2.betAmount = [5, 5]
+		self.p4.money = 5
+		self.table.pots = [20, 30, 30]
+		self.p2.betAmount = [5, 10, 10]
 		
-		self.table._slicePot(5, 1)
-		self.assertTrue(self.table.pots == [15, 15, 5, 20])
-		self.assertTrue(self.table.currentBet == [5, 5, 5, 20])
+		self.table._slicePot(5, 2, self.p4)
+		self.assertTrue(self.table.pots == [20, 30, 15, 20])
+		self.assertTrue(self.table.currentBet == [5, 10, 5, 15])
 		self.assertTrue(self.p1.betAmount == [5])
-		self.assertTrue(self.p2.betAmount == [5, 5])
-		self.assertTrue(self.p3.betAmount == [5, 5, 5, 20])
+		self.assertTrue(self.p2.betAmount == [5, 10, 5, 5])
+		self.assertTrue(self.p3.betAmount == [5, 10, 5, 15])
+		self.assertTrue(self.p4.betAmount == [5, 10, 5])
 		
 	def testSlicePotBetAmountIntegrityTwo(self):
-		self.table.pots = [15, 15, 20]
-		self.p2.betAmount = [5, 5]
+		self.p4.money = 7
+		self.table.pots = [20, 30, 20]
+		self.p2.betAmount = [5, 10, 10]
 		
-		self.table._slicePot(7, 1)
-		self.assertTrue(self.table.pots == [15, 19, 3, 20])
-		self.assertTrue(self.table.currentBet == [5, 7, 3, 20])
+		self.table._slicePot(7, 2, self.p4)
+		self.assertTrue(self.table.pots == [20, 30, 21, 16])
+		self.assertTrue(self.table.currentBet == [5, 10, 7, 13])
 		self.assertTrue(self.p1.betAmount == [5])
-		self.assertTrue(self.p2.betAmount == [5, 5])
-		self.assertTrue(self.p3.betAmount == [5, 7, 3, 20])
+		self.assertTrue(self.p2.betAmount == [5, 10, 7, 3])
+		self.assertTrue(self.p3.betAmount == [5, 10, 7, 13])
+		self.assertTrue(self.p4.betAmount == [5, 10, 7])
+		
+	def testSlicePotBetAmountIntegrityThree(self):
+		self.p4.money = 7
+		self.table.pots = [20, 30, 15]
+		self.p2.betAmount = [5, 10, 5]
+		
+		self.table._slicePot(7, 2, self.p4)
+		self.assertTrue(self.table.pots == [20, 30, 19, 13])
+		self.assertTrue(self.table.currentBet == [5, 10, 7, 13])
+		self.assertTrue(self.p1.betAmount == [5])
+		self.assertTrue(self.p2.betAmount == [5, 10, 5])
+		self.assertTrue(self.p3.betAmount == [5, 10, 7, 13])
+		self.assertTrue(self.p4.betAmount == [5, 10, 7])
 		
 		
 		
@@ -487,6 +509,7 @@ class TestCollectBigBlind(TestTableSetUp):
 		self.assertTrue(self.p2.betAmount == [7])
 		self.assertTrue(self.p3.betAmount == [7, 8])
 		
+		
 class TestMakeBet(TestTableSetUp):
 	def setUp(self):
 		TestTableSetUp.setUp(self)
@@ -512,5 +535,58 @@ class TestMakeBet(TestTableSetUp):
 		self.assertTrue(self.table.currentBet == [20])
 		self.assertTrue(self.p1.betAmount == [20])
 		self.assertTrue(self.p1.money == 980)
+	
+	def testCallOnRaise(self):
+		self.table.makeBet(self.p1, 20)
+		self.table.makeBet(self.p2, 15)
+		
+		self.assertTrue(self.table.pots == [50])
+		self.assertTrue(self.table.currentBet == [20])
+		self.assertTrue(self.p2.betAmount == [20])
+		self.assertTrue(self.p2.money == 980)
+		
+	def testRaiseOnRaise(self):
+		self.table.makeBet(self.p1, 20)
+		self.table.makeBet(self.p2, 25)
+		
+		self.assertTrue(self.table.pots == [60])
+		self.assertTrue(self.table.currentBet == [30])
+		self.assertTrue(self.p2.betAmount == [30])
+		self.assertTrue(self.p2.money == 970)
+		
+	def testCallOnRaiseCantPay(self):
+		self.p2.money = 10
+		self.table.makeBet(self.p1, 20)
+		self.table.makeBet(self.p2, 10)
+		
+		#print self.table.pots
+		self.assertTrue(self.table.pots == [40, 5])
+		self.assertTrue(self.table.currentBet == [15, 5])
+		self.assertTrue(self.p1.betAmount == [15, 5])
+		self.assertTrue(self.p2.betAmount == [15])
+		self.assertTrue(self.p3.betAmount == [10])
+		self.assertTrue(self.p2.money == 0)
+	
+class TestDetermineAmountToCall(TestTableSetUp):
+	def setUp(self):
+		TestTableSetUp.setUp(self)
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table.addPlayer(self.p3)
+		self.table.smallBlind = 5
+		self.table.bigBlind = 10
+		self.table.collectSmallBlind()
+		self.table.collectBigBlind()
+
+	def testDetermineAfterBlinds(self):
+		self.assertTrue(self.table.determineAmountToCall(self.p1) == 10)
+		
+	def testDetermineAfterBet(self):
+		self.table.makeBet(self.p1, 10)
+		self.assertTrue(self.table.determineAmountToCall(self.p2) == 5)
+		
+	def testDetermineAfterRaise(self):
+		self.table.makeBet(self.p1, 20)
+		self.assertTrue(self.table.determineAmountToCall(self.p2) == 15)
 
 
