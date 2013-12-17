@@ -148,12 +148,16 @@ class Table():
 				player.money = 0
 				return
 			else:
-				print player.name
-				print self.pots
 				player.removeMoney(self.currentBet[i])
 				self.pots[i] = self.pots[i] + self.currentBet[i]
 				player.betAmount.append(self.currentBet[i])
 				amount = amount - self.currentBet[i]
+				
+		if amount > 0:
+			player.removeMoney(amount)
+			self.pots[-1] = self.pots[-1] + amount
+			player.betAmount[-1] = player.betAmount[-1] + amount
+			self.currentBet[-1] = player.betAmount[-1]
 				
 	def _slicePot(self, amount, i):
 		self.pots[i:i] = [amount]

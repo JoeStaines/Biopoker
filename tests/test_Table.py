@@ -504,5 +504,13 @@ class TestMakeBet(TestTableSetUp):
 		self.assertTrue(self.table.pots == [25])
 		self.assertTrue(self.table.currentBet == [10])
 		self.assertTrue(self.p1.betAmount == [10])
+		
+	def testMakeRaise(self):
+		self.table.makeBet(self.p1, 20)
+		
+		self.assertTrue(self.table.pots == [35])
+		self.assertTrue(self.table.currentBet == [20])
+		self.assertTrue(self.p1.betAmount == [20])
+		self.assertTrue(self.p1.money == 980)
 
 
