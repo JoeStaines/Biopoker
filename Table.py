@@ -6,12 +6,14 @@ class Table():
 		self.playerList = [None, None, None, None, None, None]
 		self.deck = []
 		self.reinitDeck()
+		self.communityCards = []
 		self.pots = [0]
 		self.currentBet = [0] # Bet for each pot if there are side pots
 		self.ante = 0
 		self.bigBlind = 0
 		self.smallBlind = 0
 		self.curDealerSeatNo = 0
+		self.turn = 0
 		
 	def addPlayer(self, player):
 		for i in range(len(self.playerList)):
@@ -188,4 +190,18 @@ class Table():
 	
 	def makeBet(self, player, amount):
 		self.collectMoney(player, amount)
+		
+	def setNextTurn(self):
+		_, index = self.findNthPlayerFromSeat(self.turn, 1)
+		self.turn = index
+		
+	def deal(self):
+		playerList = self.getPlayers()
+		start = self.curDealerSeatNo + 1
+		for i in range(len(playerList)*2):
+			playerList[(start + i) % len(playerList)].hand.append(self.deck.pop())
+			
+	def dealCommunity(self, num):
+		for _ in range(num):
+			self.communityCards.append(self.deck.pop())
 		

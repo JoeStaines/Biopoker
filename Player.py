@@ -5,6 +5,7 @@ class Player():
 		self.money = money
 		self.hand = []
 		self.betAmount = []
+		self.isHandLive = False
 		
 	def removeMoney(self, amount):
 		self.money = self.money - amount

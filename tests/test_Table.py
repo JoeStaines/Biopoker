@@ -588,5 +588,64 @@ class TestDetermineAmountToCall(TestTableSetUp):
 	def testDetermineAfterRaise(self):
 		self.table.makeBet(self.p1, 20)
 		self.assertTrue(self.table.determineAmountToCall(self.p2) == 15)
-
+		
+class TestSetNextTurn(TestTableSetUp):
+	def setUp(self):
+		TestTableSetUp.setUp(self)
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table._debugDirectAssign(self.p3, 4)
+		
+	def testSetNextTurn(self):
+		self.table.turn = 0
+		self.table.setNextTurn()
+		
+		self.assertTrue(self.table.turn == 1)
+		
+	def testSetNextTurnLoop(self):
+		self.table.turn = 4
+		self.table.setNextTurn()
+		
+		self.assertTrue(self.table.turn == 0)
+		
+class TestDeal(TestTableSetUp):
+	def setUp(self):
+		TestTableSetUp.setUp(self)
+		self.table.deck = range(52) # Unrandomize the deck so it's determinate
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table.addPlayer(self.p3)
+		
+	def testDealThreePlayers(self):
+		self.table.deal()
+		
+		self.assertTrue(self.p1.hand == [49,46])
+		self.assertTrue(self.p2.hand == [51,48])
+		self.assertTrue(self.p3.hand == [50,47])
+		
+	def testDealChangeDealer(self):
+		self.table.curDealerSeatNo = 1
+		self.table.deal()
+		
+		self.assertTrue(self.p1.hand == [50,47])
+		self.assertTrue(self.p2.hand == [49,46])
+		self.assertTrue(self.p3.hand == [51,48])
+		
+class TestDealCommunity(TestTableSetUp):
+	def setUp(self):
+		TestTableSetUp.setUp(self)
+		self.table.deck = range(52) # Unrandomize the deck so it's determinate
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table.addPlayer(self.p3)
+		
+	def testDealCommunityOne(self):
+		self.table.dealCommunity(1)
+		
+		self.assertTrue(self.table.communityCards == [51])
+		
+	def testDealCommunityThree(self):
+		self.table.dealCommunity(3)
+		
+		self.assertTrue(self.table.communityCards == [51, 50, 49])
 
