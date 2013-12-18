@@ -344,7 +344,7 @@ class TestSlicePot(TestTableSetUp):
 	def testSlicePot(self):
 		self.p4.money = 5
 	
-		self.table._slicePot(5, 2, self.p4)
+		self.table._slicePot(2, self.p4)
 		self.assertTrue(self.table.pots == [20, 30, 10, 15])
 		self.assertTrue(self.table.currentBet == [5, 10, 5, 15])
 		self.assertTrue(self.p1.betAmount == [5])
@@ -357,7 +357,7 @@ class TestSlicePot(TestTableSetUp):
 		self.table.pots = [20, 30, 30]
 		self.p2.betAmount = [5, 10, 10]
 		
-		self.table._slicePot(5, 2, self.p4)
+		self.table._slicePot(2, self.p4)
 		self.assertTrue(self.table.pots == [20, 30, 15, 20])
 		self.assertTrue(self.table.currentBet == [5, 10, 5, 15])
 		self.assertTrue(self.p1.betAmount == [5])
@@ -370,7 +370,7 @@ class TestSlicePot(TestTableSetUp):
 		self.table.pots = [20, 30, 20]
 		self.p2.betAmount = [5, 10, 10]
 		
-		self.table._slicePot(7, 2, self.p4)
+		self.table._slicePot(2, self.p4)
 		self.assertTrue(self.table.pots == [20, 30, 21, 16])
 		self.assertTrue(self.table.currentBet == [5, 10, 7, 13])
 		self.assertTrue(self.p1.betAmount == [5])
@@ -383,7 +383,7 @@ class TestSlicePot(TestTableSetUp):
 		self.table.pots = [20, 30, 15]
 		self.p2.betAmount = [5, 10, 5]
 		
-		self.table._slicePot(7, 2, self.p4)
+		self.table._slicePot(2, self.p4)
 		self.assertTrue(self.table.pots == [20, 30, 19, 13])
 		self.assertTrue(self.table.currentBet == [5, 10, 7, 13])
 		self.assertTrue(self.p1.betAmount == [5])

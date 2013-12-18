@@ -143,10 +143,7 @@ class Table():
 		rangestart = len(player.betAmount) if len(player.betAmount) >= 0 else 0
 		for i in range(rangestart, len(self.pots)):
 			if player.money < self.currentBet[i]:
-				#player.betAmount.append(player.money)
-				self._slicePot(player.money, i, player)
-				#player.betAmount.append(player.money)
-				#player.money = 0
+				self._slicePot(i, player)
 				return
 			else:
 				player.removeMoney(self.currentBet[i])
@@ -156,16 +153,14 @@ class Table():
 				
 		if amount > 0:
 			if player.money < self.currentBet[-1]:
-				#player.betAmount[-1] = player.betAmount[-1] + player.money
-				#player.money = 0
-				self._slicePot(player.betAmount[-1] + player.money, len(self.pots)-1, player)
+				self._slicePot(len(self.pots)-1, player)
 			else:
 				player.removeMoney(amount)
 				self.pots[-1] = self.pots[-1] + amount
 				player.betAmount[-1] = player.betAmount[-1] + amount
 				self.currentBet[-1] = player.betAmount[-1]
 				
-	def _slicePot(self, amount, i, player):
+	def _slicePot(self, i, player):
 		if len(player.betAmount) < len(self.currentBet):
 			player.betAmount.append(player.money)
 		else:
@@ -173,19 +168,16 @@ class Table():
 		player.money = 0
 		self.pots[i:i] = [0]
 		self.pots[i+1] = 0 # Going to re-evaluate this soon
-		self.currentBet[i:i] = [amount]
+		self.currentBet[i:i] = [player.betAmount[i]]
 		self.currentBet[i+1] = self.currentBet[i+1] - self.currentBet[i]
 		for x in self.getPlayers():
 			if len(x.betAmount)-1 >= i:
-				playerBetAmount = x.betAmount[i]
-				x.betAmount[i:i] = [amount] if amount < playerBetAmount else [playerBetAmount]
-				print x.name
-				print x.betAmount[i]
-				x.betAmount[i+1] = playerBetAmount - x.betAmount[i]
+				xBetAmount = x.betAmount[i]
+				x.betAmount[i:i] = [player.betAmount[i]] if player.betAmount[i] < xBetAmount else [xBetAmount]
+				x.betAmount[i+1] = xBetAmount - x.betAmount[i]
 				self.pots[i] = self.pots[i] + x.betAmount[i]
 				self.pots[i+1] = self.pots[i+1] + x.betAmount[i+1]
 				self._pruneBetAmount(x)
-		print self.pots
 		
 	def _pruneBetAmount(self, player):
 		if player.betAmount[-1] == 0:
