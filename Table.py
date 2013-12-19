@@ -2,6 +2,13 @@ from CustomExceptions import *
 import random
 
 class Table():
+	
+	PRE_FLOP = 0
+	FLOP = 1
+	TURN = 2
+	RIVER = 3
+	SHOWDOWN = 4
+		
 	def __init__(self):
 		self.playerList = [None, None, None, None, None, None]
 		self.deck = []
@@ -14,6 +21,8 @@ class Table():
 		self.smallBlind = 0
 		self.curDealerSeatNo = 0
 		self.turn = 0
+		self.roundEndSeat = 0
+		self.gameState = Table.PRE_FLOP
 		
 	def addPlayer(self, player):
 		for i in range(len(self.playerList)):
@@ -88,7 +97,7 @@ class Table():
 		self.curDealerSeatNo = index
 					
 	def findNthPlayerFromSeat(self, seat, n):
-		for i in range(1,6):
+		for i in range(1,7):
 			index = (seat + i) % 6
 			if self.playerList[index] != None:
 				if n > 1:
@@ -156,7 +165,7 @@ class Table():
 		if amount > 0:
 			if player.money < self.currentBet[-1]:
 				self._slicePot(len(self.pots)-1, player)
-			else:
+			else: # TODO: Might need to put something here that expresses when someone raises but will put them all in
 				player.removeMoney(amount)
 				self.pots[-1] = self.pots[-1] + amount
 				player.betAmount[-1] = player.betAmount[-1] + amount
@@ -190,18 +199,69 @@ class Table():
 	
 	def makeBet(self, player, amount):
 		self.collectMoney(player, amount)
+		self.setNextTurn()
 		
 	def setNextTurn(self):
-		_, index = self.findNthPlayerFromSeat(self.turn, 1)
-		self.turn = index
+		if self.roundEndSeat == self.turn:
+			self.setUpNextRound()
+		else:
+			_, self.turn = self.findNthPlayerFromSeat(self.turn, 1)
 		
 	def deal(self):
 		playerList = self.getPlayers()
 		start = self.curDealerSeatNo + 1
 		for i in range(len(playerList)*2):
 			playerList[(start + i) % len(playerList)].hand.append(self.deck.pop())
+			playerList[(start + i) % len(playerList)].isHandLive = True
 			
 	def dealCommunity(self, num):
 		for _ in range(num):
 			self.communityCards.append(self.deck.pop())
+			
+	def determineBlinds(self):
+		self.smallBlind = 5
+		self.bigBlind = 10
+		
+	def call(self, player):
+		self.makeBet(player, self.determineAmountToCall(player))
+		
+	def raiseBet(self, player, amount):
+		self.call(player)
+		self.makeBet(player, amount)
+		
+	def setUpNextRound(self):
+		if self.gameState == Table.PRE_FLOP:
+			self.gameState = Table.FLOP
+			self.dealCommunity(3)
+			_, self.turn = self.findNthPlayerFromSeat(self.curDealerSeatNo, 1)
+			self.roundEndSeat = self.curDealerSeatNo
+		elif self.gameState == Table.FLOP:
+			self.gameState = Table.TURN
+			self.dealCommunity(1)
+			_, self.turn = self.findNthPlayerFromSeat(self.curDealerSeatNo, 1)
+			self.roundEndSeat = self.curDealerSeatNo
+		elif self.gameState == Table.TURN:
+			self.gameState = Table.RIVER
+			self.dealCommunity(1)
+			_, self.turn = self.findNthPlayerFromSeat(self.curDealerSeatNo, 1)
+			self.roundEndSeat = self.curDealerSeatNo
+		elif self.gameState == Table.RIVER:
+			self.gameState = Table.SHOWDOWN
+			# Do showdown stuff here (evaluate hands, hand out pot, get ready for next game)
+			
+	# ############ Game Loop Logic ############
+	
+	def beginRound(self):
+		self.gameState = Table.PRE_FLOP
+		self.determineBlinds()
+		self.collectSmallBlind()
+		self.collectBigBlind()
+		self.deal()
+		if self.noOfPlayers == 2:
+			self.turn = self.curDealerSeatNo
+			self.roundEndSeat = self.findNthPlayerFromSeat(self.turn, 1)
+		else:
+			_, self.turn = self.findNthPlayerFromSeat(self.curDealerSeatNo, 3)
+			_, self.roundEndSeat = self.findNthPlayerFromSeat(self.curDealerSeatNo, 2)
+		
 		

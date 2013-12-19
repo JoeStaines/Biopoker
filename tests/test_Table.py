@@ -521,6 +521,11 @@ class TestMakeBet(TestTableSetUp):
 		self.table.collectSmallBlind()
 		self.table.collectBigBlind()
 		
+	def testNextTurnSetAfterBet(self):
+		self.table.makeBet(self.p1, 10)
+		
+		self.assertTrue(self.table.turn == 1)
+		
 	def testMakeNormalBet(self):
 		self.table.makeBet(self.p1, 10)
 		
@@ -649,3 +654,112 @@ class TestDealCommunity(TestTableSetUp):
 		
 		self.assertTrue(self.table.communityCards == [51, 50, 49])
 
+class TestRaiseBet(TestTableSetUp):
+	def setUp(self):
+		TestTableSetUp.setUp(self)
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table.addPlayer(self.p3)
+		self.table.beginRound()
+		
+	def testRaiseBet(self):
+		self.table.call(self.p1)
+		self.table.call(self.p2)
+		self.table.raiseBet(self.p3, 10)
+		
+		self.assertTrue(self.table.pots == [40])
+		self.assertTrue(self.table.currentBet == [20])
+		self.assertTrue(self.p3.betAmount == [20])
+		
+class TestSetUpNextRound(TestTableSetUp):
+	def setUp(self):
+		TestTableSetUp.setUp(self)
+		self.table.addPlayer(self.p1)
+		self.table._debugDirectAssign(self.p2, 2)
+		self.table._debugDirectAssign(self.p3, 4)
+		self.table.gameState = Table.PRE_FLOP
+		
+	def testAfterPreFlop(self):
+		self.table.setUpNextRound()
+		
+		self.assertTrue(self.table.gameState == Table.FLOP)
+		self.assertTrue(len(self.table.communityCards) == 3)
+		self.assertTrue(self.table.turn == 2)
+		self.assertTrue(self.table.roundEndSeat == 0)
+		
+	def testAfterFlop(self):
+		self.table.setUpNextRound()
+		self.table.setUpNextRound()
+		
+		self.assertTrue(self.table.gameState == Table.TURN)
+		self.assertTrue(len(self.table.communityCards) == 4)
+		self.assertTrue(self.table.turn == 2)
+		self.assertTrue(self.table.roundEndSeat == 0)
+		
+	def testAfterTurn(self):
+		self.table.setUpNextRound()
+		self.table.setUpNextRound()
+		self.table.setUpNextRound()
+		
+		self.assertTrue(self.table.gameState == Table.RIVER)
+		self.assertTrue(len(self.table.communityCards) == 5)
+		self.assertTrue(self.table.turn == 2)
+		self.assertTrue(self.table.roundEndSeat == 0)
+		
+	def testAfterRiver(self):
+		self.table.setUpNextRound()
+		self.table.setUpNextRound()
+		self.table.setUpNextRound()
+		self.table.setUpNextRound()
+		
+		self.assertTrue(self.table.gameState == Table.SHOWDOWN)
+
+	
+class TestFinishRoundBetting(TestTableSetUp):
+	def setUp(self):
+		TestTableSetUp.setUp(self)
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table.addPlayer(self.p3)
+		
+	def testAfterPreFlop(self):
+		self.table.beginRound()
+		self.table.call(self.p1)
+		self.table.call(self.p2)
+		self.table.call(self.p3)
+		
+		self.assertTrue(self.table.gameState == Table.FLOP)
+		self.assertTrue(self.table.turn == 1)
+		
+	def testAfterFlop(self):
+		self.testAfterPreFlop()
+		self.table.call(self.p2)
+		self.table.call(self.p3)
+		self.table.call(self.p1)
+		
+		self.assertTrue(self.table.gameState == Table.TURN)
+		self.assertTrue(self.table.turn == 1)
+		
+	def testAfterTurn(self):
+		self.testAfterFlop()
+		self.table.call(self.p2)
+		self.table.call(self.p3)
+		self.table.call(self.p1)
+		
+		self.assertTrue(self.table.gameState == Table.RIVER)
+		self.assertTrue(self.table.turn == 1)
+	
+	def testAfterRiver(self):
+		self.testAfterTurn()
+		self.table.call(self.p2)
+		self.table.call(self.p3)
+		self.table.call(self.p1)
+		
+		self.assertTrue(self.table.gameState == Table.SHOWDOWN)
+	"""
+	def testRaiseIntegrity(self):
+		self.table.beginRound()
+		self.table.call(self.p1)
+		self.table.call(self.p2)
+		self.table.raiseBet(self.p3, 10)
+	"""
