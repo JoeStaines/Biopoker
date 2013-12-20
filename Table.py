@@ -206,6 +206,11 @@ class Table():
 			self.setUpNextRound()
 		else:
 			_, self.turn = self.findNthPlayerFromSeat(self.turn, 1)
+			self.checkTurn()
+				
+	def checkTurn(self):
+		if self.playerList[self.turn].money == 0 or self.playerList[self.turn].isHandLive == False: # Are they all in?
+			self.setNextTurn()
 		
 	def deal(self):
 		playerList = self.getPlayers()
@@ -229,21 +234,27 @@ class Table():
 		_, self.roundEndSeat = self.findNthPlayerFromSeat(self.turn, self.noOfPlayers()-1)
 		self.makeBet(player, self.determineAmountToCall(player)+amount)
 		
+	def fold(self, player):
+		player.isHandLive = False
+	
 	def setUpNextRound(self):
 		if self.gameState == Table.PRE_FLOP:
 			self.gameState = Table.FLOP
 			self.dealCommunity(3)
 			_, self.turn = self.findNthPlayerFromSeat(self.curDealerSeatNo, 1)
+			self.checkTurn()
 			self.roundEndSeat = self.curDealerSeatNo
 		elif self.gameState == Table.FLOP:
 			self.gameState = Table.TURN
 			self.dealCommunity(1)
 			_, self.turn = self.findNthPlayerFromSeat(self.curDealerSeatNo, 1)
+			self.checkTurn()
 			self.roundEndSeat = self.curDealerSeatNo
 		elif self.gameState == Table.TURN:
 			self.gameState = Table.RIVER
 			self.dealCommunity(1)
 			_, self.turn = self.findNthPlayerFromSeat(self.curDealerSeatNo, 1)
+			self.checkTurn()
 			self.roundEndSeat = self.curDealerSeatNo
 		elif self.gameState == Table.RIVER:
 			self.gameState = Table.SHOWDOWN

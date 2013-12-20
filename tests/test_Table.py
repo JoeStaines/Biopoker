@@ -518,6 +518,7 @@ class TestMakeBet(TestTableSetUp):
 		self.table.addPlayer(self.p3)
 		self.table.smallBlind = 5
 		self.table.bigBlind = 10
+		self.table.deal()
 		self.table.collectSmallBlind()
 		self.table.collectBigBlind()
 		
@@ -600,18 +601,37 @@ class TestSetNextTurn(TestTableSetUp):
 		self.table.addPlayer(self.p1)
 		self.table.addPlayer(self.p2)
 		self.table._debugDirectAssign(self.p3, 4)
+		self.table.deal()
 		
 	def testSetNextTurn(self):
+		self.table.roundEndSeat = 4
 		self.table.turn = 0
 		self.table.setNextTurn()
 		
 		self.assertTrue(self.table.turn == 1)
 		
 	def testSetNextTurnLoop(self):
+		self.table.roundEndSeat = 0
 		self.table.turn = 4
 		self.table.setNextTurn()
 		
 		self.assertTrue(self.table.turn == 0)
+		
+	def testSkipPlayerIfAllIn(self):
+		self.table.roundEndSeat = 4
+		self.table.turn = 0
+		self.p2.money = 0
+		self.table.setNextTurn()
+		
+		self.assertTrue(self.table.turn == 4)
+		
+	def testSkipPlayerIfFolded(self):
+		self.table.roundEndSeat = 4
+		self.table.turn = 0
+		self.table.fold(self.p2)
+		self.table.setNextTurn()
+		
+		self.assertTrue(self.table.turn == 4)
 		
 class TestDeal(TestTableSetUp):
 	def setUp(self):
@@ -679,6 +699,7 @@ class TestSetUpNextRound(TestTableSetUp):
 		self.table._debugDirectAssign(self.p2, 2)
 		self.table._debugDirectAssign(self.p3, 4)
 		self.table.gameState = Table.PRE_FLOP
+		self.table.deal()
 		
 	def testAfterPreFlop(self):
 		self.table.setUpNextRound()
@@ -714,6 +735,20 @@ class TestSetUpNextRound(TestTableSetUp):
 		self.table.setUpNextRound()
 		
 		self.assertTrue(self.table.gameState == Table.SHOWDOWN)
+		
+	def testIfPlayerAllInStartWithNextPlayer(self):
+		self.p2.money = 0
+		self.table.setUpNextRound()
+		
+		self.assertTrue(self.table.turn == 4)
+		self.assertTrue(self.table.roundEndSeat == 0)
+		
+	def testIfPlayerFoldedStartWithNextPlayer(self):
+		self.table.fold(self.p2)
+		self.table.setUpNextRound()
+		
+		self.assertTrue(self.table.turn == 4)
+		self.assertTrue(self.table.roundEndSeat == 0)
 
 	
 class TestFinishRoundBetting(TestTableSetUp):
