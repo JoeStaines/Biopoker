@@ -628,7 +628,7 @@ class TestSetNextTurn(TestTableSetUp):
 	def testSkipPlayerIfFolded(self):
 		self.table.roundEndSeat = 4
 		self.table.turn = 0
-		self.table.fold(self.p2)
+		self.p2.isHandLive = False
 		self.table.setNextTurn()
 		
 		self.assertTrue(self.table.turn == 4)
@@ -744,7 +744,7 @@ class TestSetUpNextRound(TestTableSetUp):
 		self.assertTrue(self.table.roundEndSeat == 0)
 		
 	def testIfPlayerFoldedStartWithNextPlayer(self):
-		self.table.fold(self.p2)
+		self.p2.isHandLive = False
 		self.table.setUpNextRound()
 		
 		self.assertTrue(self.table.turn == 4)
@@ -804,3 +804,20 @@ class TestFinishRoundBetting(TestTableSetUp):
 		self.table.call(self.p2)
 		
 		self.assertTrue(self.table.gameState == Table.FLOP)
+		
+	def testStillContinueAfterFold(self):
+		self.table.beginRound()
+		self.table.fold(self.p1)
+		self.table.call(self.p2)
+		self.table.call(self.p3)
+		
+		self.assertTrue(self.table.gameState == Table.FLOP)
+	
+	def testStillContinueAfterSkippingPlayer(self):
+		self.testStillContinueAfterFold()
+		self.table.call(self.p2)
+		self.table.call(self.p3)
+		
+		self.assertTrue(self.table.gameState == Table.TURN)
+		
+	# Start doing tests to evaluate hands and winning pot etc

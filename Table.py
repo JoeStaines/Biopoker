@@ -236,6 +236,7 @@ class Table():
 		
 	def fold(self, player):
 		player.isHandLive = False
+		self.setNextTurn()
 	
 	def setUpNextRound(self):
 		if self.gameState == Table.PRE_FLOP:
