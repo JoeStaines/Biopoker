@@ -670,6 +670,7 @@ class TestRaiseBet(TestTableSetUp):
 		self.assertTrue(self.table.pots == [40])
 		self.assertTrue(self.table.currentBet == [20])
 		self.assertTrue(self.p3.betAmount == [20])
+		self.assertTrue(self.table.turn == 0)
 		
 class TestSetUpNextRound(TestTableSetUp):
 	def setUp(self):
@@ -756,10 +757,15 @@ class TestFinishRoundBetting(TestTableSetUp):
 		self.table.call(self.p1)
 		
 		self.assertTrue(self.table.gameState == Table.SHOWDOWN)
-	"""
+	
 	def testRaiseIntegrity(self):
 		self.table.beginRound()
 		self.table.call(self.p1)
 		self.table.call(self.p2)
 		self.table.raiseBet(self.p3, 10)
-	"""
+		self.assertTrue(self.table.roundEndSeat == 1)
+		self.assertTrue(self.table.gameState == Table.PRE_FLOP)
+		self.table.call(self.p1)
+		self.table.call(self.p2)
+		
+		self.assertTrue(self.table.gameState == Table.FLOP)

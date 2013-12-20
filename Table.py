@@ -226,8 +226,8 @@ class Table():
 		self.makeBet(player, self.determineAmountToCall(player))
 		
 	def raiseBet(self, player, amount):
-		self.call(player)
-		self.makeBet(player, amount)
+		_, self.roundEndSeat = self.findNthPlayerFromSeat(self.turn, self.noOfPlayers()-1)
+		self.makeBet(player, self.determineAmountToCall(player)+amount)
 		
 	def setUpNextRound(self):
 		if self.gameState == Table.PRE_FLOP:
