@@ -860,6 +860,7 @@ class TestGetPlayersInPot(TestTableSetUp):
 		self.table.addPlayer(self.p2)
 		self.table.addPlayer(self.p3)
 		self.table.addPlayer(self.p4)
+		self.livePlayers = [self.p1, self.p2, self.p3, self.p4]
 		
 	def testSinglePot(self):
 		self.table.pots = [40]
@@ -869,7 +870,7 @@ class TestGetPlayersInPot(TestTableSetUp):
 		self.p3.betAmount = [10]
 		self.p4.betAmount = [10]
 		
-		self.assertTrue(self.table.getPlayersInPot(0) == [self.p1, self.p2, self.p3, self.p4])
+		self.assertTrue(self.table.getPlayersInPot(0, self.livePlayers) == [self.p1, self.p2, self.p3, self.p4])
 		
 	def testTwoPots(self):
 		self.table.pots = [40, 20]
@@ -879,5 +880,38 @@ class TestGetPlayersInPot(TestTableSetUp):
 		self.p3.betAmount = [10]
 		self.p4.betAmount = [10, 10]
 		
-		self.assertTrue(self.table.getPlayersInPot(1) == [self.p2, self.p4])
+		self.assertTrue(self.table.getPlayersInPot(1, self.livePlayers) == [self.p2, self.p4])
+		
+class TestGetWinners(TestTableSetUp):
+	def setUp(self):
+		TestTableSetUp.setUp(self)
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table.addPlayer(self.p3)
+		self.table.pots = [30, 20]
+		
+	def testOneWinner(self):
+		evaluations = [(self.p1, 780), (self.p2, 1000), (self.p3, 950)]
+		
+		self.assertTrue(self.table.getWinners(evaluations, 0) == [self.p2])
+		
+	def testTwoWinner(self):
+		evaluations = [(self.p1, 1000), (self.p2, 1000), (self.p3, 950)]
+		
+		self.assertTrue(self.table.getWinners(evaluations, 0) == [self.p1, self.p2])
+		
+	
+class TestHandOutMoney(TestTableSetUp):
+	def setUp(self):
+		TestTableSetUp.setUp(self)
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table.addPlayer(self.p3)
+		self.table.addPlayer(self.p4)
+		self.table.pots = [40]
+		
+	def testOneWinsPot(self):
+		winners = [self.p1]
+		self.table.handOutMoney(winners, 0)
+		self.assertTrue(self.p1.money == 1040)
 	

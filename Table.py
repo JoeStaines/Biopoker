@@ -278,21 +278,33 @@ class Table():
 			self.gameState = Table.SHOWDOWN
 			# Do showdown stuff here (evaluate hands, hand out pot, get ready for next game)
 		
-	def getPlayersInPot(self, potIndex):
+	def getPlayersInPot(self, potIndex, livePlayers):
 		players = []
-		for x in self.getPlayers():
+		for x in livePlayers:
 			if len(x.betAmount) > potIndex:
 				players.append(x)
 		return players
 		
 	def getLivePlayers(self):
 		return self.getAndFilterPlayers(lambda x: x if x.isHandLive == True else None)
+	
+	def getWinners(self, evaluations, potIndex):
+		# What evaluations looks like -> [(playerObj, handScore)]
+		winners = []
+		evaluations.sort(key=lambda x: x[1], reverse=True)
+		highest = evaluations[0][1]
+		for x in evaluations:
+			if x[1] == highest:
+				winners.append(x[0])
+			else:
+				break
+		return winners
 		
 	"""
 	def evaluateWinner(self):
-		livePlayers = self.getLivePlayers()
+		livePlayers = self.getLivePlayers()	
 		for i in len(self.pots):
-			players = self.getPlayersInPot(i)
+			players = self.getPlayersInPot(i, livePlayers)
 			evaluations = []
 			for x in players:
 				combined = x.hand + self.communityCards
@@ -303,7 +315,6 @@ class Table():
 																		combined[4], \
 																		combined[5], \
 																		combined[6] )))
-			evaluations.sort()
 			winners = self.getWinners(evaluations, potIndex)
 			self.handOutMoney(winners, potIndex)
 	"""
