@@ -3,9 +3,16 @@ from ..Table import Table
 from ..Player import Player
 from ..CustomExceptions import *
 
+tableObject = None
+
 class TestTableSetUp(unittest.TestCase):
 	def setUp(self):
-		self.table = Table()
+		global tableObject
+		if tableObject is None:
+			tableObject = Table()
+		self.table = tableObject
+		self.table.initialiseTable()
+		
 		self.p1 = Player("p1", 1000)
 		self.p2 = Player("p2", 1000)
 		self.p3 = Player("p3", 1000)
@@ -60,7 +67,31 @@ class TestGetPlayers(TestTableSetUp):
 		self.table.addPlayer(self.p1)
 		self.table.addPlayer(self.p2)
 		self.assertTrue(self.table.getPlayers() == [self.p1, self.p2])
-
+		
+class TestGetAndFilterPlayers(TestTableSetUp):
+	def setUp(self):
+		TestTableSetUp.setUp(self)
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table.addPlayer(self.p3)
+		
+	def testGetPlayers(self):
+		self.assertTrue(self.table.getAndFilterPlayers(lambda x: x) == [self.p1, self.p2, self.p3])
+		
+	def testGetPlayersWithMoney(self):
+		self.p1.money = 500
+		self.assertTrue(self.table.getAndFilterPlayers(lambda x: x if x.money > 600 else None) == [self.p2, self.p3])
+		
+class TestGetLivePlayers(TestTableSetUp):
+	def testGetLivePlayers(self):
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table.addPlayer(self.p3)
+		self.p1.isHandLive = False
+		self.p2.isHandLive = True
+		self.p3.isHandLive = True
+		
+		self.assertTrue(self.table.getLivePlayers() == [self.p2, self.p3])
 			
 class TestRemovePlayerFromList(TestTableSetUp):
 				
@@ -821,3 +852,32 @@ class TestFinishRoundBetting(TestTableSetUp):
 		self.assertTrue(self.table.gameState == Table.TURN)
 		
 	# Start doing tests to evaluate hands and winning pot etc
+	
+class TestGetPlayersInPot(TestTableSetUp):
+	def setUp(self):
+		TestTableSetUp.setUp(self)
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table.addPlayer(self.p3)
+		self.table.addPlayer(self.p4)
+		
+	def testSinglePot(self):
+		self.table.pots = [40]
+		self.table.currentBet = [10]
+		self.p1.betAmount = [10]
+		self.p2.betAmount = [10]
+		self.p3.betAmount = [10]
+		self.p4.betAmount = [10]
+		
+		self.assertTrue(self.table.getPlayersInPot(0) == [self.p1, self.p2, self.p3, self.p4])
+		
+	def testTwoPots(self):
+		self.table.pots = [40, 20]
+		self.table.currentBet = [10, 10]
+		self.p1.betAmount = [10]
+		self.p2.betAmount = [10, 10]
+		self.p3.betAmount = [10]
+		self.p4.betAmount = [10, 10]
+		
+		self.assertTrue(self.table.getPlayersInPot(1) == [self.p2, self.p4])
+	

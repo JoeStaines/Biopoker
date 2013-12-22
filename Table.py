@@ -1,4 +1,5 @@
 from CustomExceptions import *
+from SevenEval import *
 import random
 
 class Table():
@@ -10,6 +11,10 @@ class Table():
 	SHOWDOWN = 4
 		
 	def __init__(self):
+		self.initialiseTable()
+		#self.evaluator = SevenEval()
+		
+	def initialiseTable(self):
 		self.playerList = [None, None, None, None, None, None]
 		self.deck = []
 		self.reinitDeck()
@@ -32,12 +37,24 @@ class Table():
 		
 		# At this point exhausted the list and it's full of players, raise exception
 		raise MaxBoundError
-		
+	"""
 	def getPlayers(self):
 		playerlist = []
 		for x in self.playerList:
 			if x != None:
 				playerlist.append(x)
+		return playerlist
+	"""	
+	def getPlayers(self):
+		return self.getAndFilterPlayers(lambda x: x)
+		
+	def getAndFilterPlayers(self, filterFunc):
+		playerlist = []
+		for x in self.playerList:
+			if x != None:
+				player = filterFunc(x)
+				if player != None:
+					playerlist.append(x)
 		return playerlist
 		
 	def _debugDirectAssign(self, player, pos):
@@ -260,6 +277,36 @@ class Table():
 		elif self.gameState == Table.RIVER:
 			self.gameState = Table.SHOWDOWN
 			# Do showdown stuff here (evaluate hands, hand out pot, get ready for next game)
+		
+	def getPlayersInPot(self, potIndex):
+		players = []
+		for x in self.getPlayers():
+			if len(x.betAmount) > potIndex:
+				players.append(x)
+		return players
+		
+	def getLivePlayers(self):
+		return self.getAndFilterPlayers(lambda x: x if x.isHandLive == True else None)
+		
+	"""
+	def evaluateWinner(self):
+		livePlayers = self.getLivePlayers()
+		for i in len(self.pots):
+			players = self.getPlayersInPot(i)
+			evaluations = []
+			for x in players:
+				combined = x.hand + self.communityCards
+				evaluations.append((x, self.evaluator.getRankOfSeven(	combined[0], \
+																		combined[1], \
+																		combined[2], \
+																		combined[3], \
+																		combined[4], \
+																		combined[5], \
+																		combined[6] )))
+			evaluations.sort()
+			winners = self.getWinners(evaluations, potIndex)
+			self.handOutMoney(winners, potIndex)
+	"""
 			
 	# ############ Game Loop Logic ############
 	
