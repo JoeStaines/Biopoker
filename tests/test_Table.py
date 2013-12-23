@@ -2,6 +2,7 @@ import unittest
 from ..Table import Table
 from ..Player import Player
 from ..CustomExceptions import *
+from ..CardEnum import CardEnum as C
 
 tableObject = None
 
@@ -914,4 +915,70 @@ class TestHandOutMoney(TestTableSetUp):
 		winners = [self.p1]
 		self.table.handOutMoney(winners, 0)
 		self.assertTrue(self.p1.money == 1040)
+		
+	def testTwoWinsPot(self):
+		winners = [self.p1, self.p2]
+		self.table.handOutMoney(winners, 0)
+		self.assertTrue(self.p1.money == 1020)
+		self.assertTrue(self.p2.money == 1020)
+		
+	def testThreeWinsPot(self):
+		winners = [self.p1, self.p2, self.p3]
+		self.table.handOutMoney(winners, 0)
+		self.assertTrue(self.p1.money == 1013)
+		self.assertTrue(self.p2.money == 1014)
+		self.assertTrue(self.p3.money == 1013)
+		
+class TestFindWinnerNextToDealer(TestTableSetUp):
+	def setUp(self):
+		TestTableSetUp.setUp(self)
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table.addPlayer(self.p3)
+		self.table.addPlayer(self.p4)
+		self.table.addPlayer(self.p5)
+		self.winners = [self.p1, self.p2, self.p3]
+
+	def testNextToDealer(self):
+		self.assertTrue(self.table.findWinnerNextToDealer(self.winners) == self.p2)
+		
+	def testTwoAwayFromDealer(self):
+		self.table.curDealerSeatNo = 3
+		self.assertTrue(self.table.findWinnerNextToDealer(self.winners) == self.p1)
+		
+class TestEvaluateWinner(TestTableSetUp):
+	def setUp(self):
+		TestTableSetUp.setUp(self)
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table.addPlayer(self.p3)
+		self.table.addPlayer(self.p4)
+		self.table.pots = [30, 20]
+		self.table.currentBet = [10, 10]
+		self.p1.betAmount = [10, 10]
+		self.p2.betAmount = [10, 10]
+		self.p3.betAmount = [10]
+		self.p1.isHandLive = True
+		self.p2.isHandLive = True
+		self.p3.isHandLive = True
+		
+	def testP1Wins(self):
+		self.p1.hand = [C._As, C._Ah]
+		self.p2.hand = [C._Ks, C._Kh]
+		self.p3.hand = [C._Ts, C._8h]
+		self.table.communityCards = [C._Ac, C._4s, C._8d, C._Qh, C._5d]
+		
+		self.table.evaluateWinner()
+		self.assertTrue(self.p1.money == 1050)
+		
+	def testP3WinsFirstPotP1WinsNextPot(self):
+		self.p1.hand = [C._As, C._Ah]
+		self.p2.hand = [C._2s, C._9h]
+		self.p3.hand = [C._Ks, C._Kh]
+		self.table.communityCards = [C._Kc, C._4s, C._8d, C._Qh, C._5d]
+		
+		self.table.evaluateWinner()
+		self.assertTrue(self.p1.money == 1020)
+		self.assertTrue(self.p3.money == 1030)
+		
 	

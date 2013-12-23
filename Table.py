@@ -1,6 +1,6 @@
 from CustomExceptions import *
 from SevenEval import *
-import random
+import random, math
 
 class Table():
 	
@@ -12,7 +12,7 @@ class Table():
 		
 	def __init__(self):
 		self.initialiseTable()
-		#self.evaluator = SevenEval()
+		self.evaluator = SevenEval()
 		
 	def initialiseTable(self):
 		self.playerList = [None, None, None, None, None, None]
@@ -37,14 +37,7 @@ class Table():
 		
 		# At this point exhausted the list and it's full of players, raise exception
 		raise MaxBoundError
-	"""
-	def getPlayers(self):
-		playerlist = []
-		for x in self.playerList:
-			if x != None:
-				playerlist.append(x)
-		return playerlist
-	"""	
+		
 	def getPlayers(self):
 		return self.getAndFilterPlayers(lambda x: x)
 		
@@ -300,10 +293,29 @@ class Table():
 				break
 		return winners
 		
-	"""
+	def handOutMoney(self, winners, potIndex):
+		amountWon = math.floor(self.pots[potIndex] / len(winners))
+		remainder = self.pots[potIndex] - (amountWon * len(winners))
+		for x in winners:
+			x.money = x.money + amountWon
+		
+		# Player left of dealer is considered 'worst position', so remainder goes to that player
+		player = self.findWinnerNextToDealer(winners)
+		player.money = player.money + remainder
+			
+	def findWinnerNextToDealer(self, winners):
+		curIndex = self.curDealerSeatNo
+		while True:
+			player, seat = self.findNthPlayerFromSeat(curIndex, 1)
+			for x in winners:
+				if x == player:
+					return player
+			curIndex = seat
+		
+	
 	def evaluateWinner(self):
 		livePlayers = self.getLivePlayers()	
-		for i in len(self.pots):
+		for i in range(len(self.pots)):
 			players = self.getPlayersInPot(i, livePlayers)
 			evaluations = []
 			for x in players:
@@ -315,9 +327,9 @@ class Table():
 																		combined[4], \
 																		combined[5], \
 																		combined[6] )))
-			winners = self.getWinners(evaluations, potIndex)
-			self.handOutMoney(winners, potIndex)
-	"""
+			winners = self.getWinners(evaluations, i)
+			self.handOutMoney(winners, i)
+	
 			
 	# ############ Game Loop Logic ############
 	
