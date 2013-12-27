@@ -553,6 +553,7 @@ class TestMakeBet(TestTableSetUp):
 		self.table.deal()
 		self.table.collectSmallBlind()
 		self.table.collectBigBlind()
+		self.table.roundEndSeat = -1
 		
 	def testNextTurnSetAfterBet(self):
 		self.table.makeBet(self.p1, 10)
@@ -615,6 +616,7 @@ class TestDetermineAmountToCall(TestTableSetUp):
 		self.table.bigBlind = 10
 		self.table.collectSmallBlind()
 		self.table.collectBigBlind()
+		self.table.deal()
 
 	def testDetermineAfterBlinds(self):
 		self.assertTrue(self.table.determineAmountToCall(self.p1) == 10)
@@ -724,7 +726,7 @@ class TestRaiseBet(TestTableSetUp):
 		self.assertTrue(self.p3.betAmount == [20])
 		self.assertTrue(self.table.turn == 0)
 		
-class TestSetUpNextRound(TestTableSetUp):
+class TestsetUpNextBetRound(TestTableSetUp):
 	def setUp(self):
 		TestTableSetUp.setUp(self)
 		self.table.addPlayer(self.p1)
@@ -734,7 +736,7 @@ class TestSetUpNextRound(TestTableSetUp):
 		self.table.deal()
 		
 	def testAfterPreFlop(self):
-		self.table.setUpNextRound()
+		self.table.setUpNextBetRound()
 		
 		self.assertTrue(self.table.gameState == Table.FLOP)
 		self.assertTrue(len(self.table.communityCards) == 3)
@@ -742,8 +744,8 @@ class TestSetUpNextRound(TestTableSetUp):
 		self.assertTrue(self.table.roundEndSeat == 0)
 		
 	def testAfterFlop(self):
-		self.table.setUpNextRound()
-		self.table.setUpNextRound()
+		self.table.setUpNextBetRound()
+		self.table.setUpNextBetRound()
 		
 		self.assertTrue(self.table.gameState == Table.TURN)
 		self.assertTrue(len(self.table.communityCards) == 4)
@@ -751,9 +753,9 @@ class TestSetUpNextRound(TestTableSetUp):
 		self.assertTrue(self.table.roundEndSeat == 0)
 		
 	def testAfterTurn(self):
-		self.table.setUpNextRound()
-		self.table.setUpNextRound()
-		self.table.setUpNextRound()
+		self.table.setUpNextBetRound()
+		self.table.setUpNextBetRound()
+		self.table.setUpNextBetRound()
 		
 		self.assertTrue(self.table.gameState == Table.RIVER)
 		self.assertTrue(len(self.table.communityCards) == 5)
@@ -761,23 +763,23 @@ class TestSetUpNextRound(TestTableSetUp):
 		self.assertTrue(self.table.roundEndSeat == 0)
 		
 	def testAfterRiver(self):
-		self.table.setUpNextRound()
-		self.table.setUpNextRound()
-		self.table.setUpNextRound()
-		self.table.setUpNextRound()
+		self.table.setUpNextBetRound()
+		self.table.setUpNextBetRound()
+		self.table.setUpNextBetRound()
+		self.table.setUpNextBetRound()
 		
 		self.assertTrue(self.table.gameState == Table.SHOWDOWN)
 		
 	def testIfPlayerAllInStartWithNextPlayer(self):
 		self.p2.money = 0
-		self.table.setUpNextRound()
+		self.table.setUpNextBetRound()
 		
 		self.assertTrue(self.table.turn == 4)
 		self.assertTrue(self.table.roundEndSeat == 0)
 		
 	def testIfPlayerFoldedStartWithNextPlayer(self):
 		self.p2.isHandLive = False
-		self.table.setUpNextRound()
+		self.table.setUpNextBetRound()
 		
 		self.assertTrue(self.table.turn == 4)
 		self.assertTrue(self.table.roundEndSeat == 0)
@@ -789,6 +791,7 @@ class TestFinishRoundBetting(TestTableSetUp):
 		self.table.addPlayer(self.p1)
 		self.table.addPlayer(self.p2)
 		self.table.addPlayer(self.p3)
+		self.table.deal()
 		
 	def testAfterPreFlop(self):
 		self.table.beginRound()

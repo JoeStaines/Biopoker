@@ -212,16 +212,24 @@ class Table():
 		self.setNextTurn()
 		
 	def setNextTurn(self):
-		if self.roundEndSeat == self.turn:
-			self.setUpNextRound()
-		else:
-			_, self.turn = self.findNthPlayerFromSeat(self.turn, 1)
-			self.checkTurn()
-				
-	def checkTurn(self):
-		if self.playerList[self.turn].money == 0 or self.playerList[self.turn].isHandLive == False: # Are they all in?
-			self.setNextTurn()
-		
+		playerUnsuitable = True
+		while playerUnsuitable:
+			if self.roundEndSeat == self.turn:
+				self.setUpNextBetRound()
+				playerUnsuitable = False
+			else:
+				_, self.turn = self.findNthPlayerFromSeat(self.turn, 1)
+				if self.playerList[self.turn].money > 0 and self.playerList[self.turn].isHandLive == True:
+					playerUnsuitable = False
+					
+	def findNextSuitablePlayer(self, n):
+		while True:
+			player, seat = self.findNthPlayerFromSeat(n, 1)
+			if self.playerList[seat].money > 0 and self.playerList[seat].isHandLive == True:
+				return (player, seat)
+			else:
+				n = seat
+
 	def deal(self):
 		playerList = self.getPlayers()
 		start = self.curDealerSeatNo + 1
@@ -248,27 +256,25 @@ class Table():
 		player.isHandLive = False
 		self.setNextTurn()
 	
-	def setUpNextRound(self):
+	def setUpNextBetRound(self):
 		if self.gameState == Table.PRE_FLOP:
 			self.gameState = Table.FLOP
 			self.dealCommunity(3)
-			_, self.turn = self.findNthPlayerFromSeat(self.curDealerSeatNo, 1)
-			self.checkTurn()
+			_, self.turn = self.findNextSuitablePlayer(self.curDealerSeatNo)
 			self.roundEndSeat = self.curDealerSeatNo
 		elif self.gameState == Table.FLOP:
 			self.gameState = Table.TURN
 			self.dealCommunity(1)
-			_, self.turn = self.findNthPlayerFromSeat(self.curDealerSeatNo, 1)
-			self.checkTurn()
+			_, self.turn = self.findNextSuitablePlayer(self.curDealerSeatNo)
 			self.roundEndSeat = self.curDealerSeatNo
 		elif self.gameState == Table.TURN:
 			self.gameState = Table.RIVER
 			self.dealCommunity(1)
-			_, self.turn = self.findNthPlayerFromSeat(self.curDealerSeatNo, 1)
-			self.checkTurn()
+			_, self.turn = self.findNextSuitablePlayer(self.curDealerSeatNo)
 			self.roundEndSeat = self.curDealerSeatNo
 		elif self.gameState == Table.RIVER:
 			self.gameState = Table.SHOWDOWN
+			#self.evaluateWinner()
 			# Do showdown stuff here (evaluate hands, hand out pot, get ready for next game)
 		
 	def getPlayersInPot(self, potIndex, livePlayers):
