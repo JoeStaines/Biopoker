@@ -274,7 +274,8 @@ class Table():
 			self.roundEndSeat = self.curDealerSeatNo
 		elif self.gameState == Table.RIVER:
 			self.gameState = Table.SHOWDOWN
-			#self.evaluateWinner()
+			self.evaluateWinner()
+			self.setUpNextGameRound()
 			# Do showdown stuff here (evaluate hands, hand out pot, get ready for next game)
 		
 	def getPlayersInPot(self, potIndex, livePlayers):
@@ -336,8 +337,28 @@ class Table():
 			winners = self.getWinners(evaluations, i)
 			self.handOutMoney(winners, i)
 	
-			
+	
 	# ############ Game Loop Logic ############
+	
+	def setUpNextGameRound(self):
+		self.pots = [0]
+		self.currentBet = [0]
+		self.reinitDeck()
+		self.communityCards = []
+		allPlayers = self.getPlayers()
+		self.resetPlayerHands(allPlayers)
+		self.resetPlayerBetAmount(allPlayers)
+		_, seat = self.findNthPlayerFromSeat(self.curDealerSeatNo, 1)
+		self.curDealerSeatNo = seat
+		self.beginRound()
+		
+	def resetPlayerHands(self, players):
+		for x in players:
+			x.hand = []
+			
+	def resetPlayerBetAmount(self, players):
+		for x in players:
+			x.betAmount = []
 	
 	def beginRound(self):
 		self.gameState = Table.PRE_FLOP
