@@ -1025,4 +1025,20 @@ class TestStartNextGameRound(TestTableSetUp):
 		self.assertTrue(len(self.p1.hand) == 2)
 		self.assertTrue(len(self.p2.hand) == 2)
 		
+class TestCheckOnlyPlayer(TestTableSetUp):
+	def setUp(self):
+		TestTableSetUp.setUp(self)
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table.addPlayer(self.p3)
+		self.table.beginRound()
+		
+	def testCheckOnlyPlayer(self):
+		self.table.fold(self.table.playerList[self.table.turn])
+		self.table.fold(self.table.playerList[self.table.turn])
+		
+		self.assertTrue(self.p2.money == 995)
+		self.assertTrue(self.table.gameState == Table.PRE_FLOP)
+		
+		
 	

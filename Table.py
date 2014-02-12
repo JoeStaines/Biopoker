@@ -212,15 +212,22 @@ class Table():
 		self.setNextTurn()
 		
 	def setNextTurn(self):
-		playerUnsuitable = True
-		while playerUnsuitable:
-			if self.roundEndSeat == self.turn:
-				self.setUpNextBetRound()
-				playerUnsuitable = False
-			else:
-				_, self.turn = self.findNthPlayerFromSeat(self.turn, 1)
-				if self.playerList[self.turn].money > 0 and self.playerList[self.turn].isHandLive == True:
+		liveplayers = self.getLivePlayers()
+		if len(liveplayers) == 1:
+			winner = liveplayers.pop()
+			for i in range(len(winner.betAmount)):
+				self.handOutMoney([winner], i)
+			self.setUpNextGameRound()	
+		else:
+			playerUnsuitable = True
+			while playerUnsuitable:
+				if self.roundEndSeat == self.turn:
+					self.setUpNextBetRound()
 					playerUnsuitable = False
+				else:
+					_, self.turn = self.findNthPlayerFromSeat(self.turn, 1)
+					if self.playerList[self.turn].money > 0 and self.playerList[self.turn].isHandLive == True:
+						playerUnsuitable = False
 					
 	def findNextSuitablePlayer(self, n):
 		while True:
@@ -305,6 +312,7 @@ class Table():
 		remainder = self.pots[potIndex] - (amountWon * len(winners))
 		for x in winners:
 			x.money = x.money + amountWon
+			print x.money
 		
 		# Player left of dealer is considered 'worst position', so remainder goes to that player
 		player = self.findWinnerNextToDealer(winners)
