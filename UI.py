@@ -29,7 +29,7 @@ class UI():
 					pygame.quit()
 					sys.exit()
 			pygame.display.update()
-			self.fps.tick(30)
+			self.fps.tick(10)
 			
 	def layoutTest(self):
 		self.cardyoffset = 50
@@ -52,6 +52,16 @@ class UI():
 		self.seat4 = UISeat(self.playArea, (UI.wW/2+300, self.cardheight))
 		self.seat5 = UISeat(self.playArea, (UI.wW/2+100, self.cardheight+170))
 		self.seat6 = UISeat(self.playArea, (UI.wW/2-100, self.cardheight+170))
+		
+		# Buttons
+		
+		
+		self.buttonCall = UIButton("resources/images/ButtonCall.jpg", (100, UI.wH - 150))
+		self.buttonRaise = UIButton("resources/images/ButtonRaise.jpg", (100, UI.wH - 100 + 5))
+		self.buttonFold = UIButton("resources/images/ButtonFold.jpg", (100, UI.wH - 50 + 5*2))
+		self.playArea.blit(self.buttonCall.image, self.buttonCall.rect)
+		self.playArea.blit(self.buttonRaise.image, self.buttonRaise.rect)
+		self.playArea.blit(self.buttonFold.image, self.buttonFold.rect)
 	
 
 class UIImage(pygame.sprite.Sprite):
@@ -176,6 +186,17 @@ class UISeat():
 		self.money = money
 		self._blitMoney()
 		
+class UIButton(pygame.sprite.Sprite):
+    def __init__(self, src, rectcenter):
+		pygame.sprite.Sprite.__init__(self)
+		self.image = pygame.image.load(src).convert()
+		self.rect = self.image.get_rect()
+		self.rect.center = rectcenter
+
+    def clicked(self,pos):
+        if (self.rect.left < pos[0] < self.rect.right) and (self.rect.top < pos[1] < self.rect.bottom):
+            return 1 
+
 	
 if __name__ == "__main__":
 	UIStart = UI()
