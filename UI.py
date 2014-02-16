@@ -21,6 +21,13 @@ class UI():
 		self.window = pygame.display.set_mode((UI.wW, UI.wH), 0, 32)
 		self.playArea = pygame.display.get_surface()
 		
+	def initStateVariables(self):
+		self.playerList = []
+		self.communityCards = []
+		self.pots = []
+		self.currentBet = []
+		self.turn = 0
+		
 		
 	def loop(self):
 		while 1:
@@ -28,6 +35,14 @@ class UI():
 				if event.type == QUIT:
 					pygame.quit()
 					sys.exit()
+				elif event.type == pygame.MOUSEBUTTONUP:
+					if event.button == 1:
+						if self.buttonCall.clicked(event.pos) == 1:
+							print "Call"
+						elif self.buttonRaise.clicked(event.pos) == 1:
+							print "Raise"
+						elif self.buttonFold.clicked(event.pos) == 1:
+							print "Fold"
 			pygame.display.update()
 			self.fps.tick(10)
 			
