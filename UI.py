@@ -6,8 +6,9 @@ from pygame.locals import *
 class UI():
 	wW, wH = 800, 600
 	
-	def __init__(self):
+	def __init__(self, linker):
 		pygame.init()
+		self.linker = linker
 		self.fps = pygame.time.Clock()
 		self.setDisplay()
 		
@@ -38,11 +39,16 @@ class UI():
 				elif event.type == pygame.MOUSEBUTTONUP:
 					if event.button == 1:
 						if self.buttonCall.clicked(event.pos) == 1:
-							print "Call"
+							#print "Call"
+							self.linker.linkCall()
 						elif self.buttonRaise.clicked(event.pos) == 1:
-							print "Raise"
+							r = int(raw_input("Raise: "))
+							self.linker.linkRaise(r)
 						elif self.buttonFold.clicked(event.pos) == 1:
-							print "Fold"
+							self.linker.linkFold()
+				elif event.type == pygame.KEYDOWN:
+					if event.key == K_SPACE:
+						self.linker.printTableState()
 			pygame.display.update()
 			self.fps.tick(10)
 			
@@ -212,7 +218,9 @@ class UIButton(pygame.sprite.Sprite):
         if (self.rect.left < pos[0] < self.rect.right) and (self.rect.top < pos[1] < self.rect.bottom):
             return 1 
 
-	
+
+"""		
 if __name__ == "__main__":
 	UIStart = UI()
 	UIStart.loop()
+"""

@@ -312,7 +312,6 @@ class Table():
 		remainder = self.pots[potIndex] - (amountWon * len(winners))
 		for x in winners:
 			x.money = x.money + amountWon
-			print x.money
 		
 		# Player left of dealer is considered 'worst position', so remainder goes to that player
 		player = self.findWinnerNextToDealer(winners)
