@@ -5,6 +5,8 @@ import Cards
 
 class Linker():
 	def __init__(self):
+		self.stateDict = {}
+	
 		print "starting Table init"
 		self.tableObj = Table()
 		p1 = Player("p1", 1000)
@@ -26,6 +28,14 @@ class Linker():
 		
 	def linkFold(self):
 		self.tableObj.fold(self.tableObj.playerList[self.tableObj.turn])
+		
+	def checkForUpdate(self):
+		if self.tableObj.stateDict != {}:
+			stateCopy = self.tableObj.stateDict
+			self.tableObj.stateDict = {}
+			return stateCopy
+		else:
+			return None
 		
 	def printTableState(self):
 		gameStateMapping = ["PREFLOP","FLOP","TURN","RIVER"]

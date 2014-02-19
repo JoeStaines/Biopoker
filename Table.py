@@ -15,6 +15,7 @@ class Table():
 		self.evaluator = SevenEval()
 		
 	def initialiseTable(self):
+		self.stateDict = {}
 		self.playerList = [None, None, None, None, None, None]
 		self.deck = []
 		self.reinitDeck()
@@ -28,6 +29,13 @@ class Table():
 		self.turn = 0
 		self.roundEndSeat = 0
 		self.gameState = Table.PRE_FLOP
+		
+	def setState(self):
+		self.stateDict = {'playerlist': self.playerList, \
+							'comcards': self.communityCards, \
+							'pots':		self.pots, \
+							'curbet':	self.currentBet, \
+							'turn':		self.turn }
 		
 	def addPlayer(self, player):
 		for i in range(len(self.playerList)):
@@ -254,14 +262,17 @@ class Table():
 		
 	def call(self, player):
 		self.makeBet(player, self.determineAmountToCall(player))
+		self.setState()
 		
 	def raiseBet(self, player, amount):
 		_, self.roundEndSeat = self.findNthPlayerFromSeat(self.turn, self.noOfPlayers()-1)
 		self.makeBet(player, self.determineAmountToCall(player)+amount)
+		self.setState()
 		
 	def fold(self, player):
 		player.isHandLive = False
 		self.setNextTurn()
+		self.setState()
 	
 	def setUpNextBetRound(self):
 		if self.gameState == Table.PRE_FLOP:
@@ -373,6 +384,7 @@ class Table():
 		self.collectSmallBlind()
 		self.collectBigBlind()
 		self.deal()
+		self.setState()
 		if self.noOfPlayers == 2:
 			self.turn = self.curDealerSeatNo
 			self.roundEndSeat = self.findNthPlayerFromSeat(self.turn, 1)

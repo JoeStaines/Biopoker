@@ -1040,5 +1040,25 @@ class TestCheckOnlyPlayer(TestTableSetUp):
 		self.assertTrue(self.p2.money == 995)
 		self.assertTrue(self.table.gameState == Table.PRE_FLOP)
 		
+class TestSetState(TestTableSetUp):
+	def setUp(self):
+		TestTableSetUp.setUp(self)
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table.addPlayer(self.p3)
+		self.table.communityCards = [0,1,2]
+		self.table.pots = [10]
+		self.table.currentBet = [10]
+		self.turn = 0
+		
+	def testSetState(self):
+		self.table.setState()
+		self.assertTrue(self.table.stateDict == {'playerlist': [self.p1, self.p2, self.p3, None, None, None], \
+													'comcards': [0,1,2], \
+													'pots':		[10], \
+													'curbet':	[10], \
+													'turn':		0 })
+		
+		
 		
 	

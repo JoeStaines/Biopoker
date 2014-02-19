@@ -29,6 +29,19 @@ class UI():
 		self.currentBet = []
 		self.turn = 0
 		
+	def applyState(self, update):
+		self.playerList = update['playerlist']
+		self.communityCards = update['comcards']
+		self.pots = update['pots']
+		self.currentBet = update['curbet']
+		self.turn = update['turn']
+		
+	def displayState(self):
+		print "Player List: {0}".format(self.playerList)
+		print "Community Cards: {0}".format(self.communityCards)
+		print "Pots: {0}".format(self.pots)
+		print "currentBet: {0}".format(self.currentBet)
+		print "turn: {0}".format(self.turn)
 		
 	def loop(self):
 		while 1:
@@ -49,6 +62,11 @@ class UI():
 				elif event.type == pygame.KEYDOWN:
 					if event.key == K_SPACE:
 						self.linker.printTableState()
+					elif event.key == K_1:
+						self.displayState()
+			update = self.linker.checkForUpdate()
+			if update != None:
+				self.applyState(update)
 			pygame.display.update()
 			self.fps.tick(10)
 			
