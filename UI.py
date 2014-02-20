@@ -35,6 +35,13 @@ class UI():
 		self.pots = update['pots']
 		self.currentBet = update['curbet']
 		self.turn = update['turn']
+	
+	def updateState(self):
+		for i, x in enumerate(self.playerList):
+			if x != None:
+				#print "{0}: {1}".format(x.name, x.money)
+				self.seats[i].setName(x.name)
+				self.seats[i].setMoney(x.money)
 		
 	def displayState(self):
 		print "Player List: {0}".format(self.playerList)
@@ -64,16 +71,18 @@ class UI():
 						self.linker.printTableState()
 					elif event.key == K_1:
 						self.displayState()
+						
 			update = self.linker.checkForUpdate()
 			if update != None:
 				self.applyState(update)
+				self.updateState()
 			pygame.display.update()
 			self.fps.tick(10)
 			
 	def layoutTest(self):
 		self.cardyoffset = 50
 		self.cardheight = UI.wH/2-self.cardyoffset
-	
+		
 		self.card1 = UICard((UI.wW/2-50*2+3, self.cardheight))
 		self.card2 = UICard((UI.wW/2-50*1, self.cardheight))
 		self.card3 = UICard((UI.wW/2, self.cardheight))
@@ -85,12 +94,20 @@ class UI():
 		self.playArea.blit(self.card4.image, self.card4.rect)
 		self.playArea.blit(self.card5.image, self.card5.rect)
 		
-		self.seat1 = UISeat(self.playArea, (UI.wW/2-300, self.cardheight))
-		self.seat2 = UISeat(self.playArea, (UI.wW/2-100, self.cardheight-150))
-		self.seat3 = UISeat(self.playArea, (UI.wW/2+100, self.cardheight-150))
-		self.seat4 = UISeat(self.playArea, (UI.wW/2+300, self.cardheight))
-		self.seat5 = UISeat(self.playArea, (UI.wW/2+100, self.cardheight+170))
-		self.seat6 = UISeat(self.playArea, (UI.wW/2-100, self.cardheight+170))
+		self.seats = []
+		self.seats.append( UISeat(self.playArea, (UI.wW/2-300, self.cardheight)) )
+		self.seats.append( UISeat(self.playArea, (UI.wW/2-100, self.cardheight-150)) )
+		self.seats.append( UISeat(self.playArea, (UI.wW/2+100, self.cardheight-150)) )
+		self.seats.append( UISeat(self.playArea, (UI.wW/2+300, self.cardheight)) )
+		self.seats.append( UISeat(self.playArea, (UI.wW/2+100, self.cardheight+170)) )
+		self.seats.append( UISeat(self.playArea, (UI.wW/2-100, self.cardheight+170)) )
+		
+		# self.seat1 = UISeat(self.playArea, (UI.wW/2-300, self.cardheight))
+		# self.seat2 = UISeat(self.playArea, (UI.wW/2-100, self.cardheight-150))
+		# self.seat3 = UISeat(self.playArea, (UI.wW/2+100, self.cardheight-150))
+		# self.seat4 = UISeat(self.playArea, (UI.wW/2+300, self.cardheight))
+		# self.seat5 = UISeat(self.playArea, (UI.wW/2+100, self.cardheight+170))
+		# self.seat6 = UISeat(self.playArea, (UI.wW/2-100, self.cardheight+170))
 		
 		# Buttons
 		
@@ -122,8 +139,8 @@ class UISeat():
 	def __init__(self, playArea, location):
 		self.playArea = playArea
 		# These variables will probably be replaced by some 'Player' object that contains these
-		self.name = "Anon"
-		self.money = 1000
+		self.name = "-"
+		self.money = -1
 		self.cards = (-1, -1)
 		
 		self.fontObj = pygame.font.Font("resources/fonts/arialbd.ttf", 14)
@@ -157,7 +174,6 @@ class UISeat():
 		# Make the name box surface
 		self.boxcolour = (82,82,82)
 		self.nameboxsurface = pygame.Surface((width, height))
-		self._blitBoxName()
 		
 		# Put name on surface
 		self._blitName()
@@ -184,7 +200,6 @@ class UISeat():
 		width, height = (self.seatrect.width-x, self.avheight/2)
 		
 		self.moneyboxsurface = pygame.Surface((width, height))
-		self._blitBoxMoney()
 		self._blitMoney()
 		self.seatsurface.blit(self.moneyboxsurface, (x, y))
 		
@@ -220,10 +235,14 @@ class UISeat():
 	def setName(self, name):
 		self.name = name
 		self._blitName()
+		self.seatsurface.blit(self.nameboxsurface, (self.avwidth, 0))
+		self.playArea.blit(self.seatsurface, self.seatrect)
 		
 	def setMoney(self, money):
 		self.money = money
 		self._blitMoney()
+		self.seatsurface.blit(self.moneyboxsurface, (self.avwidth, self.avheight/2))
+		self.playArea.blit(self.seatsurface, self.seatrect)
 		
 class UIButton(pygame.sprite.Sprite):
     def __init__(self, src, rectcenter):
