@@ -10,8 +10,10 @@ class UI():
 		pygame.init()
 		self.linker = linker
 		self.fps = pygame.time.Clock()
+		self.initStateVariables()
 		self.setDisplay()
 		
+		#NOTE: If the background changes to an image, change all instances of playArea.fill
 		self.bgColour = pygame.Color(0,169,11)
 		self.playArea.fill(self.bgColour)
 		
@@ -27,13 +29,15 @@ class UI():
 		self.communityCards = []
 		self.pots = []
 		self.currentBet = []
-		self.turn = 0
+		self.previousTurn = None
+		self.turn = None
 		
 	def applyState(self, update):
 		self.playerList = update['playerlist']
 		self.communityCards = update['comcards']
 		self.pots = update['pots']
 		self.currentBet = update['curbet']
+		self.previousTurn = self.turn
 		self.turn = update['turn']
 	
 	def updateState(self):
@@ -42,6 +46,10 @@ class UI():
 				#print "{0}: {1}".format(x.name, x.money)
 				self.seats[i].setName(x.name)
 				self.seats[i].setMoney(x.money)
+				
+		self.seats[self.turn].addTurnMarker()
+		if self.previousTurn != None:
+			self.seats[self.previousTurn].removeTurnMarker()
 		
 	def displayState(self):
 		print "Player List: {0}".format(self.playerList)
@@ -159,6 +167,7 @@ class UISeat():
 		self._makeName()
 		self._makeMoney()
 		#self._makeCardArea()
+		self._initTurnMarker()
 		self._displayCards()
 		
 		self.playArea.blit(self.seatsurface, self.seatrect)
@@ -243,6 +252,22 @@ class UISeat():
 		self._blitMoney()
 		self.seatsurface.blit(self.moneyboxsurface, (self.avwidth, self.avheight/2))
 		self.playArea.blit(self.seatsurface, self.seatrect)
+		
+	def _initTurnMarker(self):
+		self.TMthickness = 3
+		x, y = (self.seatrect.topleft[0], self.seatrect.topleft[1]-self.TMthickness)
+		width, height = (self.seatrect.width, self.TMthickness)
+		self.turnMarker = pygame.Surface((width, height))
+		self.turnMarkerRect = self.turnMarker.get_rect()
+		self.turnMarkerRect.topleft = (x, y)
+		self.turnMarker.fill((233,202,0))
+		
+	def addTurnMarker(self):
+		self.playArea.blit(self.turnMarker, self.turnMarkerRect)
+		
+	def removeTurnMarker(self):
+		self.playArea.fill(pygame.Color(0,169,11), self.turnMarkerRect)
+		
 		
 class UIButton(pygame.sprite.Sprite):
     def __init__(self, src, rectcenter):
