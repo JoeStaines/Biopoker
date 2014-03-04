@@ -3,6 +3,13 @@
 import pygame, sys
 from pygame.locals import *
 
+imageCache = {}
+def getImage(key):
+	if not key in imageCache:
+		imageCache[key] = pygame.image.load(key).convert()
+		imageCache[key] = pygame.transform.scale(imageCache[key], (50, 67))
+	return imageCache[key]
+	
 class UI():
 	wW, wH = 800, 600
 	
@@ -46,6 +53,7 @@ class UI():
 				#print "{0}: {1}".format(x.name, x.money)
 				self.seats[i].setName(x.name)
 				self.seats[i].setMoney(x.money)
+				self.seats[i].setCards(x.hand)
 				
 		self.seats[self.turn].addTurnMarker()
 		if self.previousTurn != None:
@@ -138,7 +146,7 @@ class UIImage(pygame.sprite.Sprite):
 class UICard(pygame.sprite.Sprite):
 	def __init__(self, location):
 		pygame.sprite.Sprite.__init__(self)
-		self.image = pygame.image.load("resources/images/card-back.jpg").convert()
+		self.image = getImage("resources/images/card-back.jpg")
 		self.image = pygame.transform.scale(self.image, (50, 67))
 		self.rect = self.image.get_rect()
 		self.rect.center = location
@@ -267,6 +275,9 @@ class UISeat():
 		
 	def removeTurnMarker(self):
 		self.playArea.fill(pygame.Color(0,169,11), self.turnMarkerRect)
+		
+	def setCards(self, hand):
+		self.cards = hand
 		
 		
 class UIButton(pygame.sprite.Sprite):
