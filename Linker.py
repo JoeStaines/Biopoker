@@ -40,6 +40,7 @@ class Linker():
 	def printTableState(self):
 		gameStateMapping = ["PREFLOP","FLOP","TURN","RIVER"]
 	
+		print "Player List: {0}".format(self.tableObj.playerList)
 		print "Betting Round: {0}".format(gameStateMapping[self.tableObj.gameState])
 		print "Pots: {0}\tCurrent Bet: {1}".format(self.tableObj.pots, self.tableObj.currentBet)
 		print "Player: {0}\tHand: {1}".format(	self.tableObj.playerList[self.tableObj.turn].name, \

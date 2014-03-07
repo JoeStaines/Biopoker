@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+# FIGURE OUT HOW TO UPDATE ONLY NEEDED STATES. PLAY LIST IS STILL BEING PASSED BY POINTER
+
 import pygame, sys
 from pygame.locals import *
 
@@ -10,7 +12,20 @@ def getImage(key):
 		imageCache[key] = pygame.transform.scale(imageCache[key], (50, 67))
 	return imageCache[key]
 	
-cardImages = ["2C.png", "back.jpg"]
+cardImages = [	"AS.png", "AH.png", "AD.png", "AC.png", \
+				"KS.png", "KH.png", "KD.png", "KC.png", \
+				"QS.png", "QH.png", "QD.png", "QC.png", \
+				"JS.png", "JH.png", "JD.png", "JC.png", \
+				"10S.png", "10H.png", "10D.png", "10C.png", \
+				"9S.png", "9H.png", "9D.png", "9C.png", \
+				"8S.png", "8H.png", "8D.png", "8C.png", \
+				"7S.png", "7H.png", "7D.png", "7C.png", \
+				"6S.png", "6H.png", "6D.png", "6C.png", \
+				"5S.png", "5H.png", "5D.png", "5C.png", \
+				"4S.png", "4H.png", "4D.png", "4C.png", \
+				"3S.png", "3H.png", "3D.png", "3C.png", \
+				"2S.png", "2H.png", "2D.png", "2C.png", \
+				"Back.png"]
 	
 class UI():
 	wW, wH = 800, 600
@@ -34,39 +49,41 @@ class UI():
 		self.playArea = pygame.display.get_surface()
 		
 	def initStateVariables(self):
-		self.playerList = []
-		self.communityCards = []
-		self.pots = []
-		self.currentBet = []
-		self.previousTurn = None
-		self.turn = None
+		self.UIplayerList = []
+		self.UIcommunityCards = []
+		self.UIpots = []
+		self.UIcurrentBet = []
+		self.UIpreviousTurn = None
+		self.UIturn = None
 		
 	def applyState(self, update):
-		self.playerList = update['playerlist']
-		self.communityCards = update['comcards']
-		self.pots = update['pots']
-		self.currentBet = update['curbet']
-		self.previousTurn = self.turn
-		self.turn = update['turn']
+		self.UIplayerList = update['playerlist']
+		self.UIcommunityCards = update['comcards']
+		self.UIpots = update['pots']
+		self.UIcurrentBet = update['curbet']
+		self.UIpreviousTurn = self.UIturn
+		self.UIturn = update['turn']
 	
 	def updateState(self):
-		for i, x in enumerate(self.playerList):
+		for i, x in enumerate(self.UIplayerList):
 			if x != None:
 				#print "{0}: {1}".format(x.name, x.money)
 				self.seats[i].setName(x.name)
 				self.seats[i].setMoney(x.money)
 				self.seats[i].setCards(x.hand)
 				
-		self.seats[self.turn].addTurnMarker()
-		if self.previousTurn != None:
-			self.seats[self.previousTurn].removeTurnMarker()
+		self.seats[self.UIturn].addTurnMarker()
+		if self.UIpreviousTurn != None:
+			self.seats[self.UIpreviousTurn].removeTurnMarker()
+			
+		self.displayCommunityCards()
 		
 	def displayState(self):
-		print "Player List: {0}".format(self.playerList)
-		print "Community Cards: {0}".format(self.communityCards)
-		print "Pots: {0}".format(self.pots)
-		print "currentBet: {0}".format(self.currentBet)
-		print "turn: {0}".format(self.turn)
+		print "Player List: {0}".format(self.UIplayerList)
+		print "Community Cards: {0}".format(self.UIcommunityCards)
+		print "Pots: {0}".format(self.UIpots)
+		print "currentBet: {0}".format(self.UIcurrentBet)
+		print "turn: {0}".format(self.UIturn)
 		
 	def loop(self):
 		while 1:
@@ -96,21 +113,27 @@ class UI():
 				self.updateState()
 			pygame.display.update()
 			self.fps.tick(10)
-			
-	def layoutTest(self):
+	
+	def displayCommunityCards(self):
 		self.cardyoffset = 50
 		self.cardheight = UI.wH/2-self.cardyoffset
 		
-		self.card1 = UICard((UI.wW/2-50*2+3, self.cardheight), 1)
-		self.card2 = UICard((UI.wW/2-50*1, self.cardheight), 1)
-		self.card3 = UICard((UI.wW/2, self.cardheight), 1)
-		self.card4 = UICard((UI.wW/2+50*1, self.cardheight), 1)
-		self.card5 = UICard((UI.wW/2+50*2, self.cardheight), 1)
+		for _ in range(5 - len(self.UIcommunityCards)):
+			self.UIcommunityCards.append(52);
+		
+		self.card1 = UICard((UI.wW/2-50*2+3, self.cardheight), 52)
+		self.card2 = UICard((UI.wW/2-50*1, self.cardheight), 52)
+		self.card3 = UICard((UI.wW/2, self.cardheight), 52)
+		self.card4 = UICard((UI.wW/2+50*1, self.cardheight), 52)
+		self.card5 = UICard((UI.wW/2+50*2, self.cardheight), 52)
 		self.playArea.blit(self.card1.image, self.card1.rect)
 		self.playArea.blit(self.card2.image, self.card2.rect)
 		self.playArea.blit(self.card3.image, self.card3.rect)
 		self.playArea.blit(self.card4.image, self.card4.rect)
 		self.playArea.blit(self.card5.image, self.card5.rect)
+	
+	def layoutTest(self):
+		self.displayCommunityCards()
 		
 		self.seats = []
 		self.seats.append( UISeat(self.playArea, (UI.wW/2-300, self.cardheight)) )
@@ -149,7 +172,6 @@ class UICard(pygame.sprite.Sprite):
 	def __init__(self, location, cardNo):
 		pygame.sprite.Sprite.__init__(self)
 		self.image = getImage("resources/images/cards/" + cardImages[cardNo])
-		self.image = pygame.transform.scale(self.image, (50, 67))
 		self.rect = self.image.get_rect()
 		self.rect.center = location
 	
@@ -159,7 +181,7 @@ class UISeat():
 		# These variables will probably be replaced by some 'Player' object that contains these
 		self.name = "-"
 		self.money = -1
-		self.cards = (-1, -1)
+		self.cards = (52, 52) # 52nd card is back face
 		
 		self.fontObj = pygame.font.Font("resources/fonts/arialbd.ttf", 14)
 		self.colour = (0, 200, 11)
@@ -242,8 +264,8 @@ class UISeat():
 		self.seatsurface.blit(self.cardAreaSurface, (x,y))
 		
 	def _displayCards(self):		
-		self.pcard1 = UICard((0,0), 0)
-		self.pcard2 = UICard((0,0), 0)
+		self.pcard1 = UICard((0,0), self.cards[0])
+		self.pcard2 = UICard((0,0), self.cards[1])
 		self.playArea.blit(self.pcard1.image, (self.seatrect.topleft[0]+5, self.seatrect.topleft[1]+self.avheight+5))
 		self.playArea.blit(self.pcard2.image, (self.seatrect.topleft[0]+5+(self.pcard1.image.get_width()/2), self.seatrect.topleft[1]+self.avheight+5))
 		
@@ -280,6 +302,7 @@ class UISeat():
 		
 	def setCards(self, hand):
 		self.cards = hand
+		self._displayCards()
 		
 		
 class UIButton(pygame.sprite.Sprite):

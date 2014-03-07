@@ -31,10 +31,10 @@ class Table():
 		self.gameState = Table.PRE_FLOP
 		
 	def setState(self):
-		self.stateDict = {'playerlist': self.playerList, \
-							'comcards': self.communityCards, \
-							'pots':		self.pots, \
-							'curbet':	self.currentBet, \
+		self.stateDict = {'playerlist': self.playerList[:], \
+							'comcards': self.communityCards[:], \
+							'pots':		self.pots[:], \
+							'curbet':	self.currentBet[:], \
 							'turn':		self.turn }
 		
 	def addPlayer(self, player):
