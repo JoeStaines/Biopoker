@@ -10,6 +10,8 @@ def getImage(key):
 		imageCache[key] = pygame.transform.scale(imageCache[key], (50, 67))
 	return imageCache[key]
 	
+cardImages = ["2C.png", "back.jpg"]
+	
 class UI():
 	wW, wH = 800, 600
 	
@@ -99,11 +101,11 @@ class UI():
 		self.cardyoffset = 50
 		self.cardheight = UI.wH/2-self.cardyoffset
 		
-		self.card1 = UICard((UI.wW/2-50*2+3, self.cardheight))
-		self.card2 = UICard((UI.wW/2-50*1, self.cardheight))
-		self.card3 = UICard((UI.wW/2, self.cardheight))
-		self.card4 = UICard((UI.wW/2+50*1, self.cardheight))
-		self.card5 = UICard((UI.wW/2+50*2, self.cardheight))
+		self.card1 = UICard((UI.wW/2-50*2+3, self.cardheight), 1)
+		self.card2 = UICard((UI.wW/2-50*1, self.cardheight), 1)
+		self.card3 = UICard((UI.wW/2, self.cardheight), 1)
+		self.card4 = UICard((UI.wW/2+50*1, self.cardheight), 1)
+		self.card5 = UICard((UI.wW/2+50*2, self.cardheight), 1)
 		self.playArea.blit(self.card1.image, self.card1.rect)
 		self.playArea.blit(self.card2.image, self.card2.rect)
 		self.playArea.blit(self.card3.image, self.card3.rect)
@@ -144,9 +146,9 @@ class UIImage(pygame.sprite.Sprite):
 	
 
 class UICard(pygame.sprite.Sprite):
-	def __init__(self, location):
+	def __init__(self, location, cardNo):
 		pygame.sprite.Sprite.__init__(self)
-		self.image = getImage("resources/images/card-back.jpg")
+		self.image = getImage("resources/images/cards/" + cardImages[cardNo])
 		self.image = pygame.transform.scale(self.image, (50, 67))
 		self.rect = self.image.get_rect()
 		self.rect.center = location
@@ -240,8 +242,8 @@ class UISeat():
 		self.seatsurface.blit(self.cardAreaSurface, (x,y))
 		
 	def _displayCards(self):		
-		self.pcard1 = UICard((0,0))
-		self.pcard2 = UICard((0,0))
+		self.pcard1 = UICard((0,0), 0)
+		self.pcard2 = UICard((0,0), 0)
 		self.playArea.blit(self.pcard1.image, (self.seatrect.topleft[0]+5, self.seatrect.topleft[1]+self.avheight+5))
 		self.playArea.blit(self.pcard2.image, (self.seatrect.topleft[0]+5+(self.pcard1.image.get_width()/2), self.seatrect.topleft[1]+self.avheight+5))
 		
