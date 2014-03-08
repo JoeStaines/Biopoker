@@ -2,6 +2,7 @@ from Table import Table
 from Player import Player
 from UI import UI
 import Cards
+import cPickle
 
 class Linker():
 	def __init__(self):
@@ -31,9 +32,9 @@ class Linker():
 		
 	def checkForUpdate(self):
 		if self.tableObj.stateDict != {}:
-			stateCopy = self.tableObj.stateDict
+			statePickle = cPickle.dumps(self.tableObj.stateDict)
 			self.tableObj.stateDict = {}
-			return stateCopy
+			return statePickle
 		else:
 			return None
 		

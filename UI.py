@@ -2,7 +2,8 @@
 
 # FIGURE OUT HOW TO UPDATE ONLY NEEDED STATES. PLAY LIST IS STILL BEING PASSED BY POINTER
 
-import pygame, sys
+import pygame, sys, cPickle
+from Player import Player
 from pygame.locals import *
 
 imageCache = {}
@@ -107,9 +108,10 @@ class UI():
 					elif event.key == K_1:
 						self.displayState()
 						
-			update = self.linker.checkForUpdate()
-			if update != None:
-				self.applyState(update)
+			updatePickle = self.linker.checkForUpdate()
+			if updatePickle != None:
+				updateState = cPickle.loads(updatePickle)
+				self.applyState(updateState)
 				self.updateState()
 			pygame.display.update()
 			self.fps.tick(10)
@@ -121,11 +123,11 @@ class UI():
 		for _ in range(5 - len(self.UIcommunityCards)):
 			self.UIcommunityCards.append(52);
 		
-		self.card1 = UICard((UI.wW/2-50*2+3, self.cardheight), 52)
-		self.card2 = UICard((UI.wW/2-50*1, self.cardheight), 52)
-		self.card3 = UICard((UI.wW/2, self.cardheight), 52)
-		self.card4 = UICard((UI.wW/2+50*1, self.cardheight), 52)
-		self.card5 = UICard((UI.wW/2+50*2, self.cardheight), 52)
+		self.card1 = UICard((UI.wW/2-50*2+3, self.cardheight), self.UIcommunityCards[0])
+		self.card2 = UICard((UI.wW/2-50*1, self.cardheight), self.UIcommunityCards[1])
+		self.card3 = UICard((UI.wW/2, self.cardheight), self.UIcommunityCards[2])
+		self.card4 = UICard((UI.wW/2+50*1, self.cardheight), self.UIcommunityCards[3])
+		self.card5 = UICard((UI.wW/2+50*2, self.cardheight), self.UIcommunityCards[4])
 		self.playArea.blit(self.card1.image, self.card1.rect)
 		self.playArea.blit(self.card2.image, self.card2.rect)
 		self.playArea.blit(self.card3.image, self.card3.rect)
