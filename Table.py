@@ -2,6 +2,8 @@ from CustomExceptions import *
 from SevenEval import *
 import random, math
 
+# TODO: go straight to showdown if not suitable players left to bet
+
 class Table():
 	
 	PRE_FLOP = 0
@@ -238,7 +240,7 @@ class Table():
 						playerUnsuitable = False
 					
 	def findNextSuitablePlayer(self, n):
-		while True:
+		for _ in range(len(self.getPlayers())):
 			player, seat = self.findNthPlayerFromSeat(n, 1)
 			if self.playerList[seat].money > 0 and self.playerList[seat].isHandLive == True:
 				return (player, seat)

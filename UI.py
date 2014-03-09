@@ -5,6 +5,7 @@
 import pygame, sys, cPickle
 from Player import Player
 from pygame.locals import *
+from lib import inputbox
 
 imageCache = {}
 def getImage(key):
@@ -86,6 +87,20 @@ class UI():
 		print "currentBet: {0}".format(self.UIcurrentBet)
 		print "turn: {0}".format(self.UIturn)
 		
+	def getRaiseAmount(self):
+		surfaceCopy = self.playArea.copy()
+		textBoxRect = pygame.Rect((self.playArea.get_width() / 2) - 100,self.playArea.get_height() - 50,200,20)
+		amount = inputbox.ask(self.playArea, "Amount", textBoxRect)
+		clearRect = pygame.Rect((self.playArea.get_width() / 2) - 120,self.playArea.get_height() - 60,240,40)
+		self.playArea.blit(surfaceCopy, clearRect, clearRect)
+		if amount.isdigit():
+			return int(amount)
+		else:
+			return None
+			
+	def determineAmountToCall(self, player):
+		return sum(self.UIcurrentBet) - sum(player.betAmount)
+		
 	def loop(self):
 		while 1:
 			for event in pygame.event.get():
@@ -98,8 +113,13 @@ class UI():
 							#print "Call"
 							self.linker.linkCall()
 						elif self.buttonRaise.clicked(event.pos) == 1:
-							r = int(raw_input("Raise: "))
-							self.linker.linkRaise(r)
+							#r = int(raw_input("Raise: "))
+							r = self.getRaiseAmount()
+							if r != None:
+								bettingAmount = self.determineAmountToCall(self.UIplayerList[self.UIturn]) + r
+								if bettingAmount <= self.UIplayerList[self.UIturn].money:
+									self.linker.linkRaise(r)
+									
 						elif self.buttonFold.clicked(event.pos) == 1:
 							self.linker.linkFold()
 				elif event.type == pygame.KEYDOWN:
