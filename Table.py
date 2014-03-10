@@ -2,7 +2,7 @@ from CustomExceptions import *
 from SevenEval import *
 import random, math
 
-# TODO: go straight to showdown if not suitable players left to bet
+# TODO: game ending scenario
 
 class Table():
 	
@@ -18,7 +18,8 @@ class Table():
 		
 	def initialiseTable(self):
 		self.stateDict = {}
-		self.playerList = [None, None, None, None, None, None]
+		self.prePlayerList = [None, None, None, None, None, None] # Used for everyone in game
+		self.playerList = [None, None, None, None, None, None] # Used for everyone in game and has money to play
 		self.deck = []
 		self.reinitDeck()
 		self.communityCards = []
@@ -50,6 +51,12 @@ class Table():
 		
 	def getPlayers(self):
 		return self.getAndFilterPlayers(lambda x: x)
+		
+	def getLivePlayers(self):
+		return self.getAndFilterPlayers(lambda x: x if x.isHandLive == True else None)
+		
+	def getSuitablePlayers(self):
+		return self.getAndFilterPlayers(lambda x: x if x.isHandLive == True and x.money > 0 else None)
 		
 	def getAndFilterPlayers(self, filterFunc):
 		playerlist = []
@@ -227,7 +234,9 @@ class Table():
 			winner = liveplayers.pop()
 			for i in range(len(winner.betAmount)):
 				self.handOutMoney([winner], i)
-			self.setUpNextGameRound()	
+			self.setUpNextGameRound()
+		elif len(self.getSuitablePlayers()) == 0:
+			self.earlyEvaluation()
 		else:
 			playerUnsuitable = True
 			while playerUnsuitable:
@@ -280,6 +289,7 @@ class Table():
 		if self.gameState == Table.PRE_FLOP:
 			self.gameState = Table.FLOP
 			self.dealCommunity(3)
+			player = self.findNextSuitablePlayer(self.curDealerSeatNo)
 			_, self.turn = self.findNextSuitablePlayer(self.curDealerSeatNo)
 			self.roundEndSeat = self.curDealerSeatNo
 		elif self.gameState == Table.FLOP:
@@ -297,6 +307,12 @@ class Table():
 			self.evaluateWinner()
 			self.setUpNextGameRound()
 			# Do showdown stuff here (evaluate hands, hand out pot, get ready for next game)
+			
+	def earlyEvaluation(self):
+		self.dealCommunity(5 - len(self.communityCards))
+		self.gameState = Table.SHOWDOWN
+		self.evaluateWinner()
+		self.setUpNextGameRound()
 		
 	def getPlayersInPot(self, potIndex, livePlayers):
 		players = []
@@ -304,9 +320,7 @@ class Table():
 			if len(x.betAmount) > potIndex:
 				players.append(x)
 		return players
-		
-	def getLivePlayers(self):
-		return self.getAndFilterPlayers(lambda x: x if x.isHandLive == True else None)
+	
 	
 	def getWinners(self, evaluations, potIndex):
 		# What evaluations looks like -> [(playerObj, handScore)]
@@ -341,6 +355,8 @@ class Table():
 		
 	
 	def evaluateWinner(self):
+		if self.pots[-1] == 0:
+			self.pots.pop()
 		livePlayers = self.getLivePlayers()	
 		for i in range(len(self.pots)):
 			players = self.getPlayersInPot(i, livePlayers)
@@ -382,14 +398,17 @@ class Table():
 	
 	def beginRound(self):
 		self.gameState = Table.PRE_FLOP
+		for p in self.getPlayers():
+			if p.money <= 0:
+				self.removePlayer(p)
 		self.determineBlinds()
 		self.collectSmallBlind()
 		self.collectBigBlind()
 		self.deal()
 		self.setState()
-		if self.noOfPlayers == 2:
+		if self.noOfPlayers() == 2:
 			self.turn = self.curDealerSeatNo
-			self.roundEndSeat = self.findNthPlayerFromSeat(self.turn, 1)
+			_, self.roundEndSeat = self.findNthPlayerFromSeat(self.turn, 1)
 		else:
 			_, self.turn = self.findNthPlayerFromSeat(self.curDealerSeatNo, 3)
 			_, self.roundEndSeat = self.findNthPlayerFromSeat(self.curDealerSeatNo, 2)

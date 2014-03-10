@@ -5,7 +5,7 @@
 import pygame, sys, cPickle
 from Player import Player
 from pygame.locals import *
-from lib import inputbox
+from exlib import inputbox
 
 imageCache = {}
 def getImage(key):
@@ -74,9 +74,9 @@ class UI():
 				self.seats[i].setMoney(x.money)
 				self.seats[i].setCards(x.hand)
 				
-		self.seats[self.UIturn].addTurnMarker()
 		if self.UIpreviousTurn != None:
 			self.seats[self.UIpreviousTurn].removeTurnMarker()
+		self.seats[self.UIturn].addTurnMarker()
 			
 		self.displayCommunityCards()
 		

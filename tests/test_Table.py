@@ -93,6 +93,18 @@ class TestGetLivePlayers(TestTableSetUp):
 		self.p3.isHandLive = True
 		
 		self.assertTrue(self.table.getLivePlayers() == [self.p2, self.p3])
+		
+class TestGetSuitablePlayers(TestTableSetUp):
+	def testGetSuitablePlayers(self):
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table.addPlayer(self.p3)
+		self.p1.isHandLive = False
+		self.p2.isHandLive = True
+		self.p3.isHandLive = True
+		self.p3.money = 0
+		
+		self.assertTrue(self.table.getSuitablePlayers() == [self.p2])
 			
 class TestRemovePlayerFromList(TestTableSetUp):
 				
