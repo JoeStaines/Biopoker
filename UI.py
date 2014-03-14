@@ -2,7 +2,8 @@
 
 # FIGURE OUT HOW TO UPDATE ONLY NEEDED STATES. PLAY LIST IS STILL BEING PASSED BY POINTER
 
-import pygame, sys, cPickle
+import pygame, sys, cPickle, time
+import UISocket
 from Player import Player
 from pygame.locals import *
 from exlib import inputbox
@@ -32,9 +33,11 @@ cardImages = [	"AS.png", "AH.png", "AD.png", "AC.png", \
 class UI():
 	wW, wH = 800, 600
 	
-	def __init__(self, linker):
+	def __init__(self):
 		pygame.init()
-		self.linker = linker
+		#self.linker = linker
+		self.startTime = time.time()
+		self.socket = UISocket.clientSocket()
 		self.fps = pygame.time.Clock()
 		self.initStateVariables()
 		self.setDisplay()
@@ -110,29 +113,38 @@ class UI():
 				elif event.type == pygame.MOUSEBUTTONUP:
 					if event.button == 1:
 						if self.buttonCall.clicked(event.pos) == 1:
-							#print "Call"
-							self.linker.linkCall()
+							print "Call"
+							#self.linker.linkCall()
 						elif self.buttonRaise.clicked(event.pos) == 1:
 							#r = int(raw_input("Raise: "))
 							r = self.getRaiseAmount()
 							if r != None:
 								bettingAmount = self.determineAmountToCall(self.UIplayerList[self.UIturn]) + r
 								if bettingAmount <= self.UIplayerList[self.UIturn].money:
-									self.linker.linkRaise(r)
+									print "Raise"
+									#self.linker.linkRaise(r)
 									
 						elif self.buttonFold.clicked(event.pos) == 1:
-							self.linker.linkFold()
+							#self.linker.linkFold()
+							print "Fold"
 				elif event.type == pygame.KEYDOWN:
 					if event.key == K_SPACE:
-						self.linker.printTableState()
+						print "Space"
+						#self.linker.printTableState()
 					elif event.key == K_1:
 						self.displayState()
 						
-			updatePickle = self.linker.checkForUpdate()
+			#updatePickle = self.linker.checkForUpdate()
+			update = UISocket.getTableData(self.socket, self.startTime)
+			print update
+			if update != {} and update != None:
+				self.startTime = time.time()
+			"""
 			if updatePickle != None:
 				updateState = cPickle.loads(updatePickle)
 				self.applyState(updateState)
 				self.updateState()
+			"""
 			pygame.display.update()
 			self.fps.tick(10)
 	
@@ -339,8 +351,7 @@ class UIButton(pygame.sprite.Sprite):
             return 1 
 
 
-"""		
+
 if __name__ == "__main__":
 	UIStart = UI()
 	UIStart.loop()
-"""

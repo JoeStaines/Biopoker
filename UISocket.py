@@ -1,30 +1,42 @@
-import socket, time, cPickle
+import socket, time, cPickle, sys
 from Player import Player
 
 def clientSocket():
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	s.connect(('127.0.0.1', 2000))
-	s.setblocking(0)
 	
-	#recv
-	while 1:
-		allData = []
-		data = ''
-		begin = time.time()
+	#remove this: code for getting out of process
+	"""
+	if ri == 1:
+		s.send('end')
+		sys.exit()
+	else:
+		s.send('start')
+	"""
 		
-		while time.time() - begin < 1:
-			try:
-				data = s.recv(4096)
-				if data:
-					allData.append(data)
-			except:
-				time.sleep(0.1)
+	s.setblocking(0)
+	return s
+
+def getTableData(s, startTime):
+	#recv
+	allData = []
+	data = ''
+	
+	if time.time() - startTime > 1:
+		try:
+			data = s.recv(4096)
+			if data:
+				allData.append(data)
+		except:
+			pass
+		
+	if allData != []:
+		joinData = ''.join(allData)
+		state = cPickle.loads(joinData)
+		return state
+	else:
+		return None
 			
-		begin = time.time()
-		if allData != []:
-			joinData = ''.join(allData)
-			state = cPickle.loads(joinData)
-			print state
 	
 if __name__ == "__main__":
 	clientSocket()

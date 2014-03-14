@@ -44,7 +44,7 @@ class Table():
 		for i in range(len(self.playerList)):
 			if self.playerList[i] == None:
 				self.playerList[i] = player
-				return
+				return i
 		
 		# At this point exhausted the list and it's full of players, raise exception
 		raise MaxBoundError
