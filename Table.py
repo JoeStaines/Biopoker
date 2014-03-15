@@ -3,6 +3,7 @@ from SevenEval import *
 import random, math
 
 # TODO: game ending scenario
+# TODO: if player in playerRemoveList, fold hand on their turn
 
 class Table():
 	
@@ -18,7 +19,7 @@ class Table():
 		
 	def initialiseTable(self):
 		self.stateDict = {}
-		self.prePlayerList = [None, None, None, None, None, None] # Used for everyone in game
+		self.playerRemoveList = [] # Add player to be removed here. Removed at next round
 		self.playerList = [None, None, None, None, None, None] # Used for everyone in game and has money to play
 		self.deck = []
 		self.reinitDeck()
@@ -75,6 +76,10 @@ class Table():
 			if self.playerList [i] == player:
 				self.playerList[i] = None
 				return
+				
+	def removeFromPlayerList(self):
+		for x in self.playerRemoveList:
+			self.removePlayer(x)
 				
 	def reinitDeck(self):
 		self.deck = range(52)
@@ -400,7 +405,8 @@ class Table():
 		self.gameState = Table.PRE_FLOP
 		for p in self.getPlayers():
 			if p.money <= 0:
-				self.removePlayer(p)
+				self.playerRemoveList.append(p)
+		self.removeFromPlayerList()
 		self.determineBlinds()
 		self.collectSmallBlind()
 		self.collectBigBlind()

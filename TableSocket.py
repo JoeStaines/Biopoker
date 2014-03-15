@@ -36,7 +36,12 @@ def socketThread(conn, table, seat):
 		if time.time() - begin > delay:
 			stateData = table.stateDict
 			pickleState = cPickle.dumps(stateData)
-			sendret = conn.sendall(pickleState)
+			try:
+				sendret = conn.sendall(pickleState)
+			except:
+				table.playerRemoveList.append(table.playerList[seat])
+				print table.playerRemoveList
+				break
 			begin = time.time()
 		
 		

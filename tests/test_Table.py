@@ -141,6 +141,24 @@ class TestRemovePlayerFromList(TestTableSetUp):
 		self.assertTrue(self.table.playerList[4] == self.p5)
 		self.assertTrue(self.table.playerList[5] == self.p6)
 		
+class TestRemoveFromRemovePlayerList(TestTableSetUp):
+	def setUp(self):
+		TestTableSetUp.setUp(self)
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table.addPlayer(self.p3)
+		
+	def testRemoveOnePlayer(self):
+		self.table.playerRemoveList.append(self.p1)
+		self.table.removeFromPlayerList()
+		self.assertTrue(self.table.playerList == [None, self.p2, self.p3, None, None, None])
+		
+	def testRemoveTwoPlayer(self):
+		self.table.playerRemoveList.append(self.p1)
+		self.table.playerRemoveList.append(self.p2)
+		self.table.removeFromPlayerList()
+		self.assertTrue(self.table.playerList == [None, None, self.p3, None, None, None])
+		
 class TestAddSidePot(TestTableSetUp):
 	def testRaiseExceptionWhenNoSidePot(self):
 		with self.assertRaises(IndexError):
