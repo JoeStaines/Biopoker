@@ -107,14 +107,15 @@ class UI():
 	def loop(self):
 		while 1:
 			for event in pygame.event.get():
+			
 				if event.type == QUIT:
 					pygame.quit()
 					sys.exit()
+					
 				elif event.type == pygame.MOUSEBUTTONUP:
 					if event.button == 1:
 						if self.buttonCall.clicked(event.pos) == 1:
-							print "Call"
-							#self.linker.linkCall()
+							UISocket.sendCommand(self.socket, 'call')
 						elif self.buttonRaise.clicked(event.pos) == 1:
 							#r = int(raw_input("Raise: "))
 							r = self.getRaiseAmount()
@@ -122,11 +123,11 @@ class UI():
 								bettingAmount = self.determineAmountToCall(self.UIplayerList[self.UIturn]) + r
 								if bettingAmount <= self.UIplayerList[self.UIturn].money:
 									print "Raise"
-									#self.linker.linkRaise(r)
-									
+									#self.linker.linkRaise(r)									
 						elif self.buttonFold.clicked(event.pos) == 1:
 							#self.linker.linkFold()
 							print "Fold"
+							
 				elif event.type == pygame.KEYDOWN:
 					if event.key == K_SPACE:
 						print "Space"
@@ -134,22 +135,14 @@ class UI():
 					elif event.key == K_1:
 						self.displayState()
 						
-			#updatePickle = self.linker.checkForUpdate()
-			if time.time() - self.startTime > 1:
+			if time.time() - self.startTime > 0.5:
 				update = UISocket.getTableData(self.socket)
 				print update
-				if update != None:
-					self.startTime = time.time()
-					if update != {}:
-						self.applyState(update)
-						self.updateState()
+				self.startTime = time.time()
+				if update != {} and update != None:
+					self.applyState(update)
+					self.updateState()
 				
-			"""
-			if updatePickle != None:
-				updateState = cPickle.loads(updatePickle)
-				self.applyState(updateState)
-				self.updateState()
-			"""
 			pygame.display.update()
 			self.fps.tick(10)
 	

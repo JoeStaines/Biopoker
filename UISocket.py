@@ -35,6 +35,12 @@ def getTableData(s):
 		return state
 	else:
 		return None
+		
+def sendCommand(s, command):
+	try:
+		s.sendall(command)
+	except:
+		print "Failed to send command {0}".format(command)
 			
 	
 if __name__ == "__main__":

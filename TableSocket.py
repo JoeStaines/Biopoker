@@ -30,8 +30,10 @@ def socketListener(table=None):
 		
 				
 def socketThread(conn, table, seat):
-	delay = 1
+	delay = 0.5
 	begin = time.time()
+	cmddata = ''
+	conn.setblocking(0)
 	while 1:
 		if time.time() - begin > delay:
 			stateData = table.stateDict
@@ -42,18 +44,16 @@ def socketThread(conn, table, seat):
 				table.playerRemoveList.append(table.playerList[seat])
 				print table.playerRemoveList
 				break
+				
+			try:
+				cmddata = conn.recv(4096)
+			except:
+				pass
+				
+			if cmddata != '':
+				if seat == table.turn:
+					if cmddata == 'call':
+						table.call(table.playerList[seat])
+				cmddata = ''
+				
 			begin = time.time()
-		
-		
-if __name__ == "__main__":
-	playerList = []
-	for _ in range(6):
-		playerList.append(Player())
-	
-	stateData = {	'playerlist': playerList[:], \
-					'comcards': [0, 0, 0, 0, 0], \
-					'pots':	[200, 30, 10], \
-					'curbet':	[100, 30, 10], \
-					'turn':		0 }
-	
-	socketListener()
