@@ -17,18 +17,17 @@ def clientSocket():
 	s.setblocking(0)
 	return s
 
-def getTableData(s, startTime):
+def getTableData(s):
 	#recv
 	allData = []
 	data = ''
 	
-	if time.time() - startTime > 1:
-		try:
-			data = s.recv(4096)
-			if data:
-				allData.append(data)
-		except:
-			pass
+	try:
+		data = s.recv(4096)
+		if data:
+			allData.append(data)
+	except:
+		pass
 		
 	if allData != []:
 		joinData = ''.join(allData)

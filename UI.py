@@ -135,10 +135,15 @@ class UI():
 						self.displayState()
 						
 			#updatePickle = self.linker.checkForUpdate()
-			update = UISocket.getTableData(self.socket, self.startTime)
-			print update
-			if update != {} and update != None:
-				self.startTime = time.time()
+			if time.time() - self.startTime > 1:
+				update = UISocket.getTableData(self.socket)
+				print update
+				if update != None:
+					self.startTime = time.time()
+					if update != {}:
+						self.applyState(update)
+						self.updateState()
+				
 			"""
 			if updatePickle != None:
 				updateState = cPickle.loads(updatePickle)
