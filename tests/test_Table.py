@@ -1088,6 +1088,23 @@ class TestSetState(TestTableSetUp):
 													'pots':		[10], \
 													'curbet':	[10], \
 													'turn':		0 })
+													
+class TestFoldIfInRemovePlayerList(TestTableSetUp):
+	def setUp(self):
+		TestTableSetUp.setUp(self)
+		self.table.addPlayer(self.p1)
+		self.table.addPlayer(self.p2)
+		self.table.addPlayer(self.p3)
+		self.table.beginRound()
+		
+	def testFoldIfInRemoveList(self):
+		self.table.playerRemoveList.append(self.p3)
+		self.table.call(self.p1)
+		self.table.call(self.p2)
+		self.assertTrue(self.p3.isHandLive == False)
+		self.assertTrue(self.p1.isHandLive == True)
+		self.assertTrue(self.p2.isHandLive == True)
+		self.assertTrue(self.table.gameState == Table.FLOP)
 		
 		
 		

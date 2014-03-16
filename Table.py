@@ -250,6 +250,8 @@ class Table():
 					playerUnsuitable = False
 				else:
 					_, self.turn = self.findNthPlayerFromSeat(self.turn, 1)
+					if self.playerList[self.turn] in self.playerRemoveList:
+						self.playerList[self.turn].isHandLive = False
 					if self.playerList[self.turn].money > 0 and self.playerList[self.turn].isHandLive == True:
 						playerUnsuitable = False
 					

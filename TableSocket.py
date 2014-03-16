@@ -11,7 +11,7 @@ def socketListener(table=None):
 		conn, addr = serversock.accept()
 		print "player connected"
 		seatNum = table.addPlayer(Player("Player", 1000))
-		if len(table.getPlayers()) > 1:
+		if len(table.getPlayers()) > 2:
 			table.beginRound()
 		
 		# remove this: code for getting out of process
@@ -52,8 +52,13 @@ def socketThread(conn, table, seat):
 				
 			if cmddata != '':
 				if seat == table.turn:
-					if cmddata == 'call':
+					left, _, right = cmddata.partition(':')
+					if left == 'call':
 						table.call(table.playerList[seat])
+					elif left == 'raise':
+						table.raiseBet(table.playerList[seat], int(right))
+					elif left ==  'fold':
+						table.fold(table.playerList[seat])
 				cmddata = ''
 				
 			begin = time.time()

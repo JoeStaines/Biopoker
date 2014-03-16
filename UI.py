@@ -76,6 +76,8 @@ class UI():
 				self.seats[i].setName(x.name)
 				self.seats[i].setMoney(x.money)
 				self.seats[i].setCards(x.hand)
+			else:
+				self.seats[i].setDefault()
 				
 		if self.UIpreviousTurn != None:
 			self.seats[self.UIpreviousTurn].removeTurnMarker()
@@ -117,16 +119,13 @@ class UI():
 						if self.buttonCall.clicked(event.pos) == 1:
 							UISocket.sendCommand(self.socket, 'call')
 						elif self.buttonRaise.clicked(event.pos) == 1:
-							#r = int(raw_input("Raise: "))
 							r = self.getRaiseAmount()
 							if r != None:
 								bettingAmount = self.determineAmountToCall(self.UIplayerList[self.UIturn]) + r
 								if bettingAmount <= self.UIplayerList[self.UIturn].money:
-									print "Raise"
-									#self.linker.linkRaise(r)									
+									UISocket.sendCommand(self.socket, "raise:{0}".format(r))																	
 						elif self.buttonFold.clicked(event.pos) == 1:
-							#self.linker.linkFold()
-							print "Fold"
+							UISocket.sendCommand(self.socket, 'fold')
 							
 				elif event.type == pygame.KEYDOWN:
 					if event.key == K_SPACE:
@@ -137,7 +136,6 @@ class UI():
 						
 			if time.time() - self.startTime > 0.5:
 				update = UISocket.getTableData(self.socket)
-				print update
 				self.startTime = time.time()
 				if update != {} and update != None:
 					self.applyState(update)
@@ -335,6 +333,11 @@ class UISeat():
 	def setCards(self, hand):
 		self.cards = hand
 		self._displayCards()
+	
+	def setDefault(self):
+		self.setName('-')
+		self.setMoney(-1)
+		self.setCards([52, 52])
 		
 		
 class UIButton(pygame.sprite.Sprite):
