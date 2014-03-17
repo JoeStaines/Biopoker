@@ -60,6 +60,7 @@ class UI():
 		self.UIcurrentBet = []
 		self.UIpreviousTurn = None
 		self.UIturn = None
+		self.UIisGameEnd = False
 		
 	def applyState(self, update):
 		self.UIplayerList = update['playerlist']
@@ -68,22 +69,33 @@ class UI():
 		self.UIcurrentBet = update['curbet']
 		self.UIpreviousTurn = self.UIturn
 		self.UIturn = update['turn']
+		self.UIisGameEnd = update['isGameEnd']
+		#test: delete this
+		if self.UIisGameEnd:
+			print 'Game End'
 	
 	def updateState(self):
-		for i, x in enumerate(self.UIplayerList):
-			if x != None:
-				#print "{0}: {1}".format(x.name, x.money)
-				self.seats[i].setName(x.name)
-				self.seats[i].setMoney(x.money)
-				self.seats[i].setCards(x.hand)
-			else:
-				self.seats[i].setDefault()
+		if not self.UIisGameEnd:
+			for i, x in enumerate(self.UIplayerList):
+				if x != None:
+					#print "{0}: {1}".format(x.name, x.money)
+					print "Seat: {0}. Money: {1}. Hand: {2}".format(i, x.money, x.hand)
+					self.seats[i].setName(x.name)
+					self.seats[i].setMoney(x.money)
+					self.seats[i].setCards(x.hand)
+				else:
+					self.seats[i].setDefault()
+					
+			if self.UIpreviousTurn != None:
+				self.seats[self.UIpreviousTurn].removeTurnMarker()
+			self.seats[self.UIturn].addTurnMarker()
 				
-		if self.UIpreviousTurn != None:
-			self.seats[self.UIpreviousTurn].removeTurnMarker()
-		self.seats[self.UIturn].addTurnMarker()
-			
-		self.displayCommunityCards()
+			self.displayCommunityCards()
+		else:
+			for i, x in enumerate(self.UIplayerList):
+				if x != None:
+					print "Player {0} has won".format(i)
+					break
 		
 	def displayState(self):
 		print "Player List: {0}".format(self.UIplayerList)
@@ -111,6 +123,7 @@ class UI():
 			for event in pygame.event.get():
 			
 				if event.type == QUIT:
+					self.socket.close()
 					pygame.quit()
 					sys.exit()
 					

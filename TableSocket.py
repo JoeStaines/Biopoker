@@ -11,7 +11,7 @@ def socketListener(table=None):
 		conn, addr = serversock.accept()
 		print "player connected"
 		seatNum = table.addPlayer(Player("Player", 1000))
-		if len(table.getPlayers()) > 2:
+		if len(table.getPlayers()) > 1:
 			table.beginRound()
 		
 		# remove this: code for getting out of process
@@ -41,9 +41,14 @@ def socketThread(conn, table, seat):
 			try:
 				sendret = conn.sendall(pickleState)
 			except:
-				table.playerRemoveList.append(table.playerList[seat])
-				print table.playerRemoveList
-				break
+				if table.playerList[seat] != None:
+					table.playerRemoveList.append(table.playerList[seat])
+					print table.playerRemoveList
+					break
+				else:
+					print 'already deleted'
+					print table.playerRemoveList
+					break
 				
 			try:
 				cmddata = conn.recv(4096)

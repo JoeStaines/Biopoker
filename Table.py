@@ -3,7 +3,6 @@ from SevenEval import *
 import random, math
 
 # TODO: game ending scenario
-# TODO: if player in playerRemoveList, fold hand on their turn
 
 class Table():
 	
@@ -26,6 +25,7 @@ class Table():
 		self.communityCards = []
 		self.pots = [0]
 		self.currentBet = [0] # Bet for each pot if there are side pots
+		self.isGameEnd = False
 		self.ante = 0
 		self.bigBlind = 0
 		self.smallBlind = 0
@@ -39,7 +39,8 @@ class Table():
 							'comcards': self.communityCards[:], \
 							'pots':		self.pots[:], \
 							'curbet':	self.currentBet[:], \
-							'turn':		self.turn }
+							'turn':		self.turn, \
+							'isGameEnd': self.isGameEnd}
 		
 	def addPlayer(self, player):
 		for i in range(len(self.playerList)):
@@ -409,16 +410,19 @@ class Table():
 			if p.money <= 0:
 				self.playerRemoveList.append(p)
 		self.removeFromPlayerList()
-		self.determineBlinds()
-		self.collectSmallBlind()
-		self.collectBigBlind()
-		self.deal()
-		self.setState()
-		if self.noOfPlayers() == 2:
-			self.turn = self.curDealerSeatNo
-			_, self.roundEndSeat = self.findNthPlayerFromSeat(self.turn, 1)
+		if len(self.getPlayers()) == 1:
+			self.isGameEnd = True
 		else:
-			_, self.turn = self.findNthPlayerFromSeat(self.curDealerSeatNo, 3)
-			_, self.roundEndSeat = self.findNthPlayerFromSeat(self.curDealerSeatNo, 2)
+			self.determineBlinds()
+			self.collectSmallBlind()
+			self.collectBigBlind()
+			self.deal()
+			self.setState()
+			if self.noOfPlayers() == 2:
+				self.turn = self.curDealerSeatNo
+				_, self.roundEndSeat = self.findNthPlayerFromSeat(self.turn, 1)
+			else:
+				_, self.turn = self.findNthPlayerFromSeat(self.curDealerSeatNo, 3)
+				_, self.roundEndSeat = self.findNthPlayerFromSeat(self.curDealerSeatNo, 2)
 		
 		
