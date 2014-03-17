@@ -91,6 +91,7 @@ class UI():
 			self.seats[self.UIturn].addTurnMarker()
 				
 			self.displayCommunityCards()
+			self.displayInfo()
 		else:
 			for i, x in enumerate(self.UIplayerList):
 				if x != None:
@@ -174,9 +175,18 @@ class UI():
 		self.playArea.blit(self.card3.image, self.card3.rect)
 		self.playArea.blit(self.card4.image, self.card4.rect)
 		self.playArea.blit(self.card5.image, self.card5.rect)
+		
+	def displayInfo(self):
+		infoFont = pygame.font.Font("resources/fonts/arialbd.ttf", 30)
+		fontRender = infoFont.render("To Call: 100", True, (30, 30, 30))
+		x = self.playArea.get_width() - fontRender.get_width() - 10
+		y = self.playArea.get_height() - fontRender.get_height() - 10
+		self.playArea.fill(self.bgColour, (x, y, fontRender.get_width(), fontRender.get_height()))
+		self.playArea.blit(fontRender, (x, y))
 	
 	def layoutTest(self):
 		self.displayCommunityCards()
+		self.displayInfo()
 		
 		self.seats = []
 		self.seats.append( UISeat(self.playArea, (UI.wW/2-300, self.cardheight)) )
