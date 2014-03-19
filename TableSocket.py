@@ -10,7 +10,13 @@ def socketListener(table=None):
 	while 1:
 		conn, addr = serversock.accept()
 		print "player connected"
-		seatNum = table.addPlayer(Player("Player", 1000))
+		namedata = ''
+		while not namedata:
+			try:
+				namedata = conn.recv(4096)
+			except:
+				pass
+		seatNum = table.addPlayer(Player(namedata, 1000))
 		if len(table.getPlayers()) > 1:
 			table.beginRound()
 		

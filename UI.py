@@ -38,6 +38,7 @@ class UI():
 		#self.linker = linker
 		self.startTime = time.time()
 		self.socket = UISocket.clientSocket()
+		UISocket.getAndSendName(self.socket)
 		self.fps = pygame.time.Clock()
 		self.initStateVariables()
 		self.setDisplay()
@@ -79,7 +80,7 @@ class UI():
 			for i, x in enumerate(self.UIplayerList):
 				if x != None:
 					#print "{0}: {1}".format(x.name, x.money)
-					print "Seat: {0}. Money: {1}. Hand: {2}".format(i, x.money, x.hand)
+					#print "Seat: {0}. Money: {1}. Hand: {2}".format(i, x.money, x.hand)
 					self.seats[i].setName(x.name)
 					self.seats[i].setMoney(x.money)
 					self.seats[i].setCards(x.hand)

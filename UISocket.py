@@ -41,6 +41,20 @@ def sendCommand(s, command):
 		s.sendall(command)
 	except:
 		print "Failed to send command {0}".format(command)
+		
+def getAndSendName(s):
+	nameSuitable = False
+	while not nameSuitable:
+		name = raw_input('Your name: ')
+		if len(name) > 7:
+			print "Name must be 7 characters or less"
+		else:
+			nameSuitable = True
+	
+	try:
+		s.sendall(name)
+	except:
+		print "Failed to send name: {0}".format(name)
 			
 	
 if __name__ == "__main__":
