@@ -39,6 +39,8 @@ class UI():
 		self.startTime = time.time()
 		self.socket = UISocket.clientSocket()
 		UISocket.getAndSendName(self.socket)
+		self.seatno = UISocket.receiveSeat(self.socket)
+		print self.seatno
 		self.fps = pygame.time.Clock()
 		self.initStateVariables()
 		self.setDisplay()

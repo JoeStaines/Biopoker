@@ -56,6 +56,31 @@ def getAndSendName(s):
 	except:
 		print "Failed to send name: {0}".format(name)
 			
+			
+def receiveSeat(s):
+	seatno = ''
+	timeout = 10
+	starttime = time.time()
+	while not seatno:
+		if time.time() - starttime < timeout:
+			try:
+				seatno = s.recv(4096)
+			except:
+				pass
+		else:
+			print "Timeout: couldn't receive seat number. Exiting"
+			s.close()
+			sys.exit()
+	
+	# send handshake OK
+	try:
+		s.sendall('OK')
+	except:
+		print "Failed sending handshake OK"
+		conn.close()
+		sys.exit()
+			
+	return int(seatno)
 	
 if __name__ == "__main__":
 	clientSocket()

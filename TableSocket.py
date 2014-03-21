@@ -40,6 +40,9 @@ def socketThread(conn, table, seat):
 	begin = time.time()
 	cmddata = ''
 	conn.setblocking(0)
+	
+	sendSeatNumber(conn, seat)
+	
 	while 1:
 		if time.time() - begin > delay:
 			stateData = table.stateDict
@@ -73,3 +76,25 @@ def socketThread(conn, table, seat):
 				cmddata = ''
 				
 			begin = time.time()
+			
+def sendSeatNumber(conn, seat):
+	# send seat number
+	try:
+		conn.sendall(str(seat).encode('utf-8'))
+	except:
+		print "Failed to send player seat"
+	
+	# wait for handshake
+	handshake = ''
+	while not handshake:
+		try:
+			handshake = conn.recv(4096)
+		except:
+			pass
+			
+	if handshake == 'OK':
+		return
+	else:
+		print "Handshake not ok. Received: {0}".format(handshake)
+		conn.close()
+		sys.exit()
