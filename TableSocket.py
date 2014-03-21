@@ -1,4 +1,4 @@
-import socket, sys, time, cPickle, thread
+import socket, sys, time, cPickle, thread, copy
 from Player import Player
 
 stateData = {}
@@ -45,7 +45,9 @@ def socketThread(conn, table, seat):
 	
 	while 1:
 		if time.time() - begin > delay:
-			stateData = table.stateDict
+			stateData = copy.deepcopy(table.stateDict)
+			if stateData != {}:
+				removeOtherPlayersCards(seat, stateData['playerlist'])
 			pickleState = cPickle.dumps(stateData)
 			try:
 				sendret = conn.sendall(pickleState)
@@ -76,6 +78,8 @@ def socketThread(conn, table, seat):
 				cmddata = ''
 				
 			begin = time.time()
+		else:
+			time.sleep(0.1)
 			
 def sendSeatNumber(conn, seat):
 	# send seat number
@@ -98,3 +102,8 @@ def sendSeatNumber(conn, seat):
 		print "Handshake not ok. Received: {0}".format(handshake)
 		conn.close()
 		sys.exit()
+		
+def removeOtherPlayersCards(seat, playerlist):
+	for i, x in enumerate(playerlist):
+		if i != seat and x != None:
+			x.hand = [52, 52]

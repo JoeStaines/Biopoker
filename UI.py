@@ -40,7 +40,6 @@ class UI():
 		self.socket = UISocket.clientSocket()
 		UISocket.getAndSendName(self.socket)
 		self.seatno = UISocket.receiveSeat(self.socket)
-		print self.seatno
 		self.fps = pygame.time.Clock()
 		self.initStateVariables()
 		self.setDisplay()
@@ -48,6 +47,9 @@ class UI():
 		#NOTE: If the background changes to an image, change all instances of playArea.fill
 		self.bgColour = pygame.Color(0,169,11)
 		self.playArea.fill(self.bgColour)
+		
+		# This variable used in self.displayInfo
+		self.previousRect = None
 		
 		self.layoutTest()
 		pygame.display.set_caption('Biopoker')
@@ -180,12 +182,17 @@ class UI():
 		self.playArea.blit(self.card5.image, self.card5.rect)
 		
 	def displayInfo(self):
-		infoFont = pygame.font.Font("resources/fonts/arialbd.ttf", 30)
-		fontRender = infoFont.render("To Call: 100", True, (30, 30, 30))
-		x = self.playArea.get_width() - fontRender.get_width() - 10
-		y = self.playArea.get_height() - fontRender.get_height() - 10
-		self.playArea.fill(self.bgColour, (x, y, fontRender.get_width(), fontRender.get_height()))
-		self.playArea.blit(fontRender, (x, y))
+		if self.UIplayerList != []:
+			
+			if self.previousRect != None:
+				self.playArea.fill(self.bgColour, self.previousRect)
+			
+			infoFont = pygame.font.Font("resources/fonts/arialbd.ttf", 30)
+			fontRender = infoFont.render("To Call: {0}".format(self.determineAmountToCall(self.UIplayerList[self.seatno])), True, (30, 30, 30))
+			x = self.playArea.get_width() - fontRender.get_width() - 10
+			y = self.playArea.get_height() - fontRender.get_height() - 10
+			self.playArea.blit(fontRender, (x, y))
+			self.previousRect = (x, y, fontRender.get_width(), fontRender.get_height())
 	
 	def layoutTest(self):
 		self.displayCommunityCards()
