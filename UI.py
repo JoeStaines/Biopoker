@@ -48,8 +48,7 @@ class UI():
 		self.bgColour = pygame.Color(0,169,11)
 		self.playArea.fill(self.bgColour)
 		
-		# This variable used in self.displayInfo
-		self.previousRect = None
+		self.initPreviousDisplayRects()
 		
 		self.layoutTest()
 		pygame.display.set_caption('Biopoker')
@@ -66,6 +65,13 @@ class UI():
 		self.UIpreviousTurn = None
 		self.UIturn = None
 		self.UIisGameEnd = False
+		
+	def initPreviousDisplayRects(self):
+		# This variable used in self.displayCalInfo
+		self.displayCallInfoPrevRect = None
+		
+		#This is used in self.displayPot
+		self.displayPotPrevRect = None
 		
 	def applyState(self, update):
 		self.UIplayerList = update['playerlist']
@@ -96,7 +102,8 @@ class UI():
 			self.seats[self.UIturn].addTurnMarker()
 				
 			self.displayCommunityCards()
-			self.displayInfo()
+			self.displayCallInfo()
+			self.displayPot()
 		else:
 			for i, x in enumerate(self.UIplayerList):
 				if x != None:
@@ -181,22 +188,35 @@ class UI():
 		self.playArea.blit(self.card4.image, self.card4.rect)
 		self.playArea.blit(self.card5.image, self.card5.rect)
 		
-	def displayInfo(self):
+	def displayCallInfo(self):
 		if self.UIplayerList != []:
 			
-			if self.previousRect != None:
-				self.playArea.fill(self.bgColour, self.previousRect)
+			if self.displayCallInfoPrevRect != None:
+				self.playArea.fill(self.bgColour, self.displayCallInfoPrevRect)
 			
 			infoFont = pygame.font.Font("resources/fonts/arialbd.ttf", 30)
 			fontRender = infoFont.render("To Call: {0}".format(self.determineAmountToCall(self.UIplayerList[self.seatno])), True, (30, 30, 30))
 			x = self.playArea.get_width() - fontRender.get_width() - 10
 			y = self.playArea.get_height() - fontRender.get_height() - 10
 			self.playArea.blit(fontRender, (x, y))
-			self.previousRect = (x, y, fontRender.get_width(), fontRender.get_height())
+			self.displayCallInfoPrevRect = (x, y, fontRender.get_width(), fontRender.get_height())
+			
+	def displayPot(self):
+		if self.UIpots != []:
+			
+			if self.displayPotPrevRect != None:
+				self.playArea.fill(self.bgColour, self.displayPotPrevRect)
+			
+			infoFont = pygame.font.Font("resources/fonts/arialbd.ttf", 25)
+			fontRender = infoFont.render("{0}".format(sum(self.UIpots)), True, (30,30,30))
+			x = self.playArea.get_width()/2 - fontRender.get_width()/2
+			y = self.playArea.get_height()/2
+			self.playArea.blit(fontRender, (x, y))
+			self.displayPotPrevRect = (x, y, fontRender.get_width(), fontRender.get_height())
 	
 	def layoutTest(self):
 		self.displayCommunityCards()
-		self.displayInfo()
+		self.displayCallInfo()
 		
 		self.seats = []
 		self.seats.append( UISeat(self.playArea, (UI.wW/2-300, self.cardheight)) )
