@@ -3,7 +3,7 @@
 # FIGURE OUT HOW TO UPDATE ONLY NEEDED STATES. PLAY LIST IS STILL BEING PASSED BY POINTER
 
 import pygame, sys, cPickle, time
-import UISocket
+from UISocket import UISocket
 from Player import Player
 from pygame.locals import *
 from exlib import inputbox
@@ -35,11 +35,15 @@ class UI():
 	
 	def __init__(self):
 		pygame.init()
-		#self.linker = linker
 		self.startTime = time.time()
-		self.socket = UISocket.clientSocket()
-		UISocket.getAndSendName(self.socket)
-		self.seatno = UISocket.receiveSeat(self.socket)
+		
+		#self.socket = UISocket.clientSocket()
+		#UISocket.getAndSendName(self.socket)
+		#self.seatno = UISocket.receiveSeat(self.socket)
+		self.sockObj = UISocket()
+		self.sockObj.getAndSendName()
+		self.seatno = self.sockObj.receiveSeat()
+		
 		self.fps = pygame.time.Clock()
 		self.initStateVariables()
 		self.setDisplay()
@@ -143,15 +147,18 @@ class UI():
 				elif event.type == pygame.MOUSEBUTTONUP:
 					if event.button == 1:
 						if self.buttonCall.clicked(event.pos) == 1:
-							UISocket.sendCommand(self.socket, 'call')
+							#UISocket.sendCommand(self.socket, 'call')
+							self.sockObj.sendCommand('call')
 						elif self.buttonRaise.clicked(event.pos) == 1:
 							r = self.getRaiseAmount()
 							if r != None:
 								bettingAmount = self.determineAmountToCall(self.UIplayerList[self.UIturn]) + r
 								if bettingAmount <= self.UIplayerList[self.UIturn].money:
-									UISocket.sendCommand(self.socket, "raise:{0}".format(r))																	
+									#UISocket.sendCommand(self.socket, "raise:{0}".format(r))
+									self.sockObj.sendCommand("raise:{0}".format(r))
 						elif self.buttonFold.clicked(event.pos) == 1:
-							UISocket.sendCommand(self.socket, 'fold')
+							#UISocket.sendCommand(self.socket, 'fold')
+							self.sockObj.sendCommand('fold')
 							
 				elif event.type == pygame.KEYDOWN:
 					if event.key == K_SPACE:
@@ -161,7 +168,8 @@ class UI():
 						self.displayState()
 						
 			if time.time() - self.startTime > 0.5:
-				update = UISocket.getTableData(self.socket)
+				#update = UISocket.getTableData(self.socket)
+				update = self.sockObj.getTableData()
 				self.startTime = time.time()
 				if update != {} and update != None:
 					self.applyState(update)

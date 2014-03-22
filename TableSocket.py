@@ -3,19 +3,14 @@ from Player import Player
 
 stateData = {}
 
-def socketListener(table=None):
+def socketListener(table):
 	serversock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	serversock.bind(('127.0.0.1', 2000))
 	serversock.listen(1)
 	while 1:
 		conn, addr = serversock.accept()
 		print "player connected"
-		namedata = ''
-		while not namedata:
-			try:
-				namedata = conn.recv(4096)
-			except:
-				pass
+		namedata = recvInfo(conn, 'Get Name')
 		seatNum = table.addPlayer(Player(namedata, 1000))
 		if len(table.getPlayers()) > 1:
 			table.beginRound()
@@ -80,21 +75,59 @@ def socketThread(conn, table, seat):
 			begin = time.time()
 		else:
 			time.sleep(0.1)
-			
-def sendSeatNumber(conn, seat):
-	# send seat number
-	try:
-		conn.sendall(str(seat).encode('utf-8'))
-	except:
-		print "Failed to send player seat"
 	
-	# wait for handshake
-	handshake = ''
-	while not handshake:
+def recvInfo(conn, errorID):
+	allData = None
+	data = ''
+	length = None
+	timeout = 10
+	
+	beginTime = time.time()
+	while time.time() - beginTime < timeout:
 		try:
-			handshake = conn.recv(4096)
+			data = conn.recv(4096)
 		except:
 			pass
+		
+		if data != '' and allData == None:
+			lengthStr, sep, payload = data.partition(':#:')
+			print lengthStr
+			length = int(lengthStr)
+			allData = payload
+			data = ''
+		elif data != '' and allData != None:
+			allData += data
+			data = ''
+			
+		if length != None:
+			if len(allData) == length:
+				return allData
+			
+			
+	#exceed timeout: exit
+	print "Timeout: could not receive data through socket"
+	print "Error Identifier: {0}".format(errorID)
+	conn.close()
+	sys.exit()
+	
+def sendInfo(conn, data, errorID):
+	try:
+		lengthPrefix = str(len(data)).encode('utf-8') + ':#:'
+		payload = lengthPrefix + data
+		conn.sendall(payload)
+	except:
+		print "Error: could not send data"
+		print "Error Identifier: {0}".format(errorID)
+		conn.close()
+		sys.exit()
+	
+def sendSeatNumber(conn, seat):
+	# send seat number
+	seatStr = str(seat).encode('utf-8')
+	sendInfo(conn, seatStr, "Sending seat no")
+	
+	# wait for handshake
+	handshake = recvInfo(conn, 'Handshake')
 			
 	if handshake == 'OK':
 		return
