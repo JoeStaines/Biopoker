@@ -9,8 +9,12 @@ def socketListener(table):
 	serversock.listen(1)
 	while 1:
 		conn, addr = serversock.accept()
-		print "player connected"
-		namedata = recvInfo(conn, 'Get Name')
+		try:
+			namedata = recvInfo(conn, 5)
+		except:
+			print "Timeout: couldn't receive name"
+			conn.close()
+			sys.exit()
 		seatNum = table.addPlayer(Player(namedata, 1000))
 		if len(table.getPlayers()) > 1:
 			table.beginRound()
@@ -26,17 +30,39 @@ def socketListener(table):
 		if data == 'end':
 			sys.exit()
 		"""
+		conn.setblocking(0)
+		sendSeatNumber(conn, seatNum)
 		
-		thread.start_new_thread(socketThread, (conn, table,seatNum))
+		thread.start_new_thread(receiveCommand, (conn, table,seatNum))
+		thread.start_new_thread(sendStateData, (conn, table,seatNum))
 		
 				
-def socketThread(conn, table, seat):
+def receiveCommand(conn, table, seat):
+	cmddata = ''
+	
+	while 1:				
+		try:
+			cmddata = recvInfo(conn, 1800)
+		except socket.timeout:
+			print "Timeout: didn't receive any command in 30 minutes"
+			conn.close()
+			sys.exit()
+			
+		if cmddata != '':
+			if seat == table.turn:
+				left, _, right = cmddata.partition(':')
+				if left == 'call':
+					table.call(table.playerList[seat])
+				elif left == 'raise':
+					table.raiseBet(table.playerList[seat], int(right))
+				elif left ==  'fold':
+					table.fold(table.playerList[seat])
+			cmddata = ''
+			
+			
+def sendStateData(conn, table, seat):
 	delay = 0.5
 	begin = time.time()
-	cmddata = ''
-	conn.setblocking(0)
-	
-	sendSeatNumber(conn, seat)
 	
 	while 1:
 		if time.time() - begin > delay:
@@ -45,7 +71,7 @@ def socketThread(conn, table, seat):
 				removeOtherPlayersCards(seat, stateData['playerlist'])
 			pickleState = cPickle.dumps(stateData)
 			try:
-				sendret = conn.sendall(pickleState)
+				sendInfo(conn, pickleState)
 			except:
 				if table.playerList[seat] != None:
 					table.playerRemoveList.append(table.playerList[seat])
@@ -55,43 +81,25 @@ def socketThread(conn, table, seat):
 					print 'already deleted'
 					print table.playerRemoveList
 					break
-				
-			try:
-				cmddata = conn.recv(4096)
-			except:
-				pass
-				
-			if cmddata != '':
-				if seat == table.turn:
-					left, _, right = cmddata.partition(':')
-					if left == 'call':
-						table.call(table.playerList[seat])
-					elif left == 'raise':
-						table.raiseBet(table.playerList[seat], int(right))
-					elif left ==  'fold':
-						table.fold(table.playerList[seat])
-				cmddata = ''
-				
+					
 			begin = time.time()
 		else:
 			time.sleep(0.1)
 	
-def recvInfo(conn, errorID):
+def recvInfo(conn, timeout):
 	allData = None
 	data = ''
 	length = None
-	timeout = 10
 	
 	beginTime = time.time()
 	while time.time() - beginTime < timeout:
 		try:
 			data = conn.recv(4096)
 		except:
-			pass
+			time.sleep(0.1)
 		
 		if data != '' and allData == None:
 			lengthStr, sep, payload = data.partition(':#:')
-			print lengthStr
 			length = int(lengthStr)
 			allData = payload
 			data = ''
@@ -105,29 +113,33 @@ def recvInfo(conn, errorID):
 			
 			
 	#exceed timeout: exit
-	print "Timeout: could not receive data through socket"
-	print "Error Identifier: {0}".format(errorID)
-	conn.close()
-	sys.exit()
+	raise socket.timeout
 	
-def sendInfo(conn, data, errorID):
+def sendInfo(conn, data):
 	try:
 		lengthPrefix = str(len(data)).encode('utf-8') + ':#:'
 		payload = lengthPrefix + data
 		conn.sendall(payload)
-	except:
-		print "Error: could not send data"
-		print "Error Identifier: {0}".format(errorID)
-		conn.close()
-		sys.exit()
+	except socket.error:
+		raise
 	
 def sendSeatNumber(conn, seat):
 	# send seat number
 	seatStr = str(seat).encode('utf-8')
-	sendInfo(conn, seatStr, "Sending seat no")
+	try:
+		sendInfo(conn, seatStr)
+	except socket.error:
+		print "Error: could not send seat number"
+		conn.close()
+		sys.exit()
 	
 	# wait for handshake
-	handshake = recvInfo(conn, 'Handshake')
+	try:
+		handshake = recvInfo(conn, 10)
+	except socket.timeout:
+		print "Timeout: could not receive handshake"
+		conn.close()
+		sys.exit()
 			
 	if handshake == 'OK':
 		return

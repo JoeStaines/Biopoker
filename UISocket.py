@@ -22,13 +22,13 @@ class UISocket():
 		s.setblocking(0)
 		return s
 		
-	def recvInfo(self, errorID):
+	def recvInfo(self, timeout):
 		allData = None
 		data = ''
 		length = None
 		
 		beginTime = time.time()
-		while time.time() - beginTime < self.timeout:
+		while time.time() - beginTime < timeout:
 			try:
 				data = self.socket.recv(4096)
 			except:
@@ -36,7 +36,6 @@ class UISocket():
 			
 			if data != '' and allData == None:
 				lengthStr, sep, payload = data.partition(':#:')
-				print lengthStr
 				length = int(lengthStr)
 				allData = payload
 				data = ''
@@ -50,45 +49,52 @@ class UISocket():
 				
 				
 		#exceed timeout: exit
-		print "Timeout: could not receive data through socket"
-		print "Error Identifier: {0}".format(errorID)
-		self.socket.close()
-		sys.exit()
+		raise socket.timeout
 		
-	def sendInfo(self, data, errorID):
+	def sendInfo(self, data):
 		try:
 			lengthPrefix = str(len(data)).encode('utf-8') + ':#:'
 			payload = lengthPrefix + data
 			self.socket.sendall(payload)
-		except:
-			print "Error: could not send data"
-			print "Error Identifier: {0}".format(errorID)
-			self.socket.close()
-			sys.exit()
+		except socket.error:
+			raise
 			
 		
 	def getTableData(self):
 		#recv
-		allData = []
-		data = ''
+		self.allTableData = None
+		self.tableData = ''
+		self.dataLength = None
 		
 		try:
-			data = self.socket.recv(4096)
-			if data:
-				allData.append(data)
+			self.tableData = self.socket.recv(4096)
 		except:
 			pass
 			
-		if allData != []:
-			joinData = ''.join(allData)
-			state = cPickle.loads(joinData)
-			return state
-		else:
-			return None
+		if self.tableData != '' and self.allTableData == None:
+			lengthStr, sep, payload = self.tableData.partition(':#:')
+			print lengthStr
+			self.dataLength = int(lengthStr)
+			self.allTableData = payload
+			self.tableData = ''
+		elif self.tableData != '' and self.allTableData != None:
+			self.allTableData += self.tableData
+			self.tableData = ''
+			
+		if self.dataLength != None:
+			if len(self.allTableData) == self.dataLength:
+				state = cPickle.loads(self.allTableData)
+				self.allTableData = None
+				self.tableData = ''
+				self.dataLength = None
+				return state
+		
+		# Data is not altogether yet: return None
+		return None
 			
 	def sendCommand(self, command):
 		try:
-			self.socket.sendall(command)
+			self.sendInfo(command)
 		except:
 			print "Failed to send command {0}".format(command)
 			
@@ -100,32 +106,30 @@ class UISocket():
 				print "Name must be 7 characters or less"
 			else:
 				nameSuitable = True
-		
-		self.sendInfo(name, 'Send Name')
-				
+		try:
+			self.sendInfo(name)
+		except socket.error:
+			print 'Could not send name'
+			self.socket.close()
+			sys.exit()
 				
 	def receiveSeat(self):
-		"""
-		seatno = ''
-		timeout = 10
-		starttime = time.time()
-		while not seatno:
-			if time.time() - starttime < timeout:
-				try:
-					seatno = self.socket.recv(4096)
-				except:
-					pass
-			else:
-				print "Timeout: couldn't receive seat number. Exiting"
-				self.socket.close()
-				sys.exit()
-		"""
-		
-		seatno = self.recvInfo('Receive Seat Number')
+
+		try:
+			seatno = self.recvInfo(10)
+		except socket.timeout:
+			print "Timeout: receiving seat number"
+			self.socket.close()
+			sys.exit()
 		
 		# send handshake OK
-		self.sendInfo('OK', 'Handshake')
-				
+		try:
+			self.sendInfo('OK')
+		except socket.error:
+			print "Could not send handshake"
+			self.socket.close()
+			sys.exit()
+			
 		return int(seatno)
 		
 #if __name__ == "__main__":
