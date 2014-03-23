@@ -48,9 +48,9 @@ class UI():
 		self.initStateVariables()
 		self.setDisplay()
 		
-		#NOTE: If the background changes to an image, change all instances of playArea.fill
-		self.bgColour = pygame.Color(0,169,11)
-		self.playArea.fill(self.bgColour)
+		self.backgroundSurface = pygame.image.load("resources/images/TableBG.png")
+		self.backgroundSurface = pygame.transform.scale(self.backgroundSurface, (800, 600))
+		self.playArea.blit(self.backgroundSurface, (0,0))
 		
 		self.initPreviousDisplayRects()
 		
@@ -200,10 +200,10 @@ class UI():
 		if self.UIplayerList != []:
 			
 			if self.displayCallInfoPrevRect != None:
-				self.playArea.fill(self.bgColour, self.displayCallInfoPrevRect)
+				self.playArea.blit(self.backgroundSurface, self.displayCallInfoPrevRect, self.displayCallInfoPrevRect)
 			
 			infoFont = pygame.font.Font("resources/fonts/arialbd.ttf", 30)
-			fontRender = infoFont.render("To Call: {0}".format(self.determineAmountToCall(self.UIplayerList[self.seatno])), True, (30, 30, 30))
+			fontRender = infoFont.render("To Call: {0}".format(self.determineAmountToCall(self.UIplayerList[self.seatno])), True, (200, 200, 200))
 			x = self.playArea.get_width() - fontRender.get_width() - 10
 			y = self.playArea.get_height() - fontRender.get_height() - 10
 			self.playArea.blit(fontRender, (x, y))
@@ -213,10 +213,10 @@ class UI():
 		if self.UIpots != []:
 			
 			if self.displayPotPrevRect != None:
-				self.playArea.fill(self.bgColour, self.displayPotPrevRect)
+				self.playArea.blit(self.backgroundSurface, self.displayPotPrevRect, self.displayPotPrevRect)
 			
 			infoFont = pygame.font.Font("resources/fonts/arialbd.ttf", 25)
-			fontRender = infoFont.render("{0}".format(sum(self.UIpots)), True, (30,30,30))
+			fontRender = infoFont.render(u'\xA3{0}'.format(sum(self.UIpots)), True, (30,30,30))
 			x = self.playArea.get_width()/2 - fontRender.get_width()/2
 			y = self.playArea.get_height()/2
 			self.playArea.blit(fontRender, (x, y))
@@ -227,12 +227,12 @@ class UI():
 		self.displayCallInfo()
 		
 		self.seats = []
-		self.seats.append( UISeat(self.playArea, (UI.wW/2-300, self.cardheight)) )
-		self.seats.append( UISeat(self.playArea, (UI.wW/2-100, self.cardheight-150)) )
-		self.seats.append( UISeat(self.playArea, (UI.wW/2+100, self.cardheight-150)) )
-		self.seats.append( UISeat(self.playArea, (UI.wW/2+300, self.cardheight)) )
-		self.seats.append( UISeat(self.playArea, (UI.wW/2+100, self.cardheight+170)) )
-		self.seats.append( UISeat(self.playArea, (UI.wW/2-100, self.cardheight+170)) )
+		self.seats.append( UISeat(self.playArea, (UI.wW/2-300, self.cardheight), self.backgroundSurface) )
+		self.seats.append( UISeat(self.playArea, (UI.wW/2-100, self.cardheight-150), self.backgroundSurface) )
+		self.seats.append( UISeat(self.playArea, (UI.wW/2+100, self.cardheight-150), self.backgroundSurface) )
+		self.seats.append( UISeat(self.playArea, (UI.wW/2+300, self.cardheight), self.backgroundSurface) )
+		self.seats.append( UISeat(self.playArea, (UI.wW/2+100, self.cardheight+170), self.backgroundSurface) )
+		self.seats.append( UISeat(self.playArea, (UI.wW/2-100, self.cardheight+170), self.backgroundSurface) )
 		
 		# self.seat1 = UISeat(self.playArea, (UI.wW/2-300, self.cardheight))
 		# self.seat2 = UISeat(self.playArea, (UI.wW/2-100, self.cardheight-150))
@@ -267,8 +267,9 @@ class UICard(pygame.sprite.Sprite):
 		self.rect.center = location
 	
 class UISeat():
-	def __init__(self, playArea, location):
+	def __init__(self, playArea, location, bg):
 		self.playArea = playArea
+		self.backgroundSurface = bg
 		# These variables will probably be replaced by some 'Player' object that contains these
 		self.name = "-"
 		self.money = -1
@@ -389,7 +390,7 @@ class UISeat():
 		self.playArea.blit(self.turnMarker, self.turnMarkerRect)
 		
 	def removeTurnMarker(self):
-		self.playArea.fill(pygame.Color(0,169,11), self.turnMarkerRect)
+		self.playArea.blit(self.backgroundSurface, self.turnMarkerRect, self.turnMarkerRect)
 		
 	def setCards(self, hand):
 		self.cards = hand
