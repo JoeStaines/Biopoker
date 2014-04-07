@@ -1,0 +1,21 @@
+<xml>
+	<process language="python" class="..\..\fakevilistus\fakevilistus.py">
+        <parameter>192.168.1.20:2000</parameter>
+	</process>
+    <process language="python" class="..\Collectors\VilistusCollector.py" name="Vilistus Collector">
+        <parameter name="vilistusHost">127.0.0.1</parameter>
+        <parameter name="vilistusPort">49990</parameter>
+        <parameter name="outport">49992</parameter>
+        <parameter name="channels">3</parameter>
+        <channel name="GSR" num="0"/>
+        <channel name="ECG" num="1"/>
+        <channel name="RSP" num="2"/>
+    </process>
+    <!--
+    <process language="python" class="..\Processors\ECGHRProcessor.py" name="HR Processor">
+        <parameter name="inHost">1@127.0.0.1</parameter>
+        <parameter name="inPort">49992</parameter>
+        <parameter name="outport">49993</parameter>
+    </process>
+	-->
+    </xml>

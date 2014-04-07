@@ -57,6 +57,7 @@ class UI():
 		self.layoutTest()
 		pygame.display.set_caption('Biopoker')
 		
+		
 	def setDisplay(self):
 		self.window = pygame.display.set_mode((UI.wW, UI.wH), 0, 32)
 		self.playArea = pygame.display.get_surface()
@@ -97,7 +98,8 @@ class UI():
 					#print "Seat: {0}. Money: {1}. Hand: {2}".format(i, x.money, x.hand)
 					self.seats[i].setName(x.name)
 					self.seats[i].setMoney(x.money)
-					self.seats[i].setCards(x.hand)
+					if x.hand != []:
+						self.seats[i].setCards(x.hand)
 				else:
 					self.seats[i].setDefault()
 					
@@ -108,6 +110,11 @@ class UI():
 			self.displayCommunityCards()
 			self.displayCallInfo()
 			self.displayPot()
+			
+			#test code
+			if self.UIplayerList[self.seatno] != None:
+				self.check = False
+				print "Seat No {0} GSR: {1}".format(self.seatno, self.UIplayerList[self.seatno].GSRData)
 		else:
 			for i, x in enumerate(self.UIplayerList):
 				if x != None:

@@ -3,7 +3,7 @@ from Player import Player
 
 stateData = {}
 
-def socketListener(table):
+def socketListener(table, numplayers):
 	serversock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	serversock.bind(('127.0.0.1', 2000))
 	serversock.listen(1)
@@ -16,7 +16,7 @@ def socketListener(table):
 			conn.close()
 			sys.exit()
 		seatNum = table.addPlayer(Player(namedata, 1000))
-		if len(table.getPlayers()) > 1:
+		if len(table.getPlayers()) == numplayers:
 			table.beginRound()
 		
 		# remove this: code for getting out of process
@@ -63,6 +63,7 @@ def receiveCommand(conn, table, seat):
 def sendStateData(conn, table, seat):
 	delay = 0.5
 	begin = time.time()
+	table.setState()
 	
 	while 1:
 		if time.time() - begin > delay:

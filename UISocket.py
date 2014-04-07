@@ -73,7 +73,6 @@ class UISocket():
 			
 		if self.tableData != '' and self.allTableData == None:
 			lengthStr, sep, payload = self.tableData.partition(':#:')
-			print lengthStr
 			self.dataLength = int(lengthStr)
 			self.allTableData = payload
 			self.tableData = ''
