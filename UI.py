@@ -12,7 +12,7 @@ imageCache = {}
 def getImage(key):
 	if not key in imageCache:
 		imageCache[key] = pygame.image.load(key).convert()
-		imageCache[key] = pygame.transform.scale(imageCache[key], (50, 67))
+		#imageCache[key] = pygame.transform.scale(imageCache[key], (50, 67))
 	return imageCache[key]
 	
 cardImages = [	"AS.png", "AH.png", "AD.png", "AC.png", \
@@ -98,6 +98,7 @@ class UI():
 					#print "Seat: {0}. Money: {1}. Hand: {2}".format(i, x.money, x.hand)
 					self.seats[i].setName(x.name)
 					self.seats[i].setMoney(x.money)
+					self.seats[i].setAvatar(x.GSRData)
 					if x.hand != []:
 						self.seats[i].setCards(x.hand)
 				else:
@@ -111,10 +112,6 @@ class UI():
 			self.displayCallInfo()
 			self.displayPot()
 			
-			#test code
-			if self.UIplayerList[self.seatno] != None:
-				self.check = False
-				print "Seat No {0} GSR: {1}".format(self.seatno, self.UIplayerList[self.seatno].GSRData)
 		else:
 			for i, x in enumerate(self.UIplayerList):
 				if x != None:
@@ -291,9 +288,6 @@ class UISeat():
 		self.seatrect.center = location
 		
 		self._makeAv()
-		self.avwidth = self.avatar.get_width()
-		self.avheight = self.avatar.get_height()
-		self.seatsurface.blit(self.avatar, (0,0))
 		
 		self._makeName()
 		self._makeMoney()
@@ -306,6 +300,14 @@ class UISeat():
 	def _makeAv(self):
 		self.avatar = pygame.image.load("resources/images/avatar.png").convert()
 		self.avrect = self.avatar.get_rect()
+		self.avwidth = self.avatar.get_width()
+		self.avheight = self.avatar.get_height()
+		self.seatsurface.blit(self.avatar, (0,0))
+		
+	def _changeAv(self, imagepath):
+		self.avatar = getImage(imagepath)
+		self.seatsurface.blit(self.avatar, (0,0))
+		self.playArea.blit(self.seatsurface, self.seatrect)
 	
 	def _makeName(self):
 		x, y = (self.avwidth, 0)
@@ -402,6 +404,30 @@ class UISeat():
 	def setCards(self, hand):
 		self.cards = hand
 		self._displayCards()
+		
+	def setAvatar(self, biodata):
+		print "in1 {0}".format(biodata)
+		if biodata < 147:
+			print "if 1"
+			self._changeAv("resources/images/avatar-blue.png")
+		elif biodata < 147*2:
+			print "if 2"
+			self._changeAv("resources/images/avatar-purple.png")
+		elif biodata < 147*3:
+			print "if 3"
+			self._changeAv("resources/images/avatar-green.png")
+		elif biodata < 147*4:
+			print "if 4"
+			self._changeAv("resources/images/avatar.png")
+		elif biodata < 147*5:
+			print "if 5"
+			self._changeAv("resources/images/avatar-yellow.png")
+		elif biodata < 147*6:
+			print "if 6"
+			self._changeAv("resources/images/avatar-orange.png")
+		elif biodata < 147*7:
+			print "if 7"
+			self._changeAv("resources/images/avatar-red.png")
 	
 	def setDefault(self):
 		self.setName('-')

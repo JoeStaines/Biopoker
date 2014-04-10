@@ -14,7 +14,7 @@ class BiodataConsumer():
             data = self.consumer.getData()
             if data != None:
 				if self.table.playerList[self.seatNo] != None:
-					self.table.playerList[self.seatNo].GSRData = data
+					self.table.playerList[self.seatNo].GSRData = int(data)
             
             
 def main(host,port):
