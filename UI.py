@@ -2,7 +2,7 @@
 
 # FIGURE OUT HOW TO UPDATE ONLY NEEDED STATES. PLAY LIST IS STILL BEING PASSED BY POINTER
 
-import pygame, sys, cPickle, time
+import pygame, sys, cPickle, time, threading
 from UISocket import UISocket
 from Player import Player
 from pygame.locals import *
@@ -35,7 +35,7 @@ class UI():
 	
 	def __init__(self):
 		pygame.init()
-		self.startTime = time.time()
+		self.prevState = {}
 		
 		#self.socket = UISocket.clientSocket()
 		#UISocket.getAndSendName(self.socket)
@@ -43,6 +43,7 @@ class UI():
 		self.sockObj = UISocket()
 		self.sockObj.getAndSendName()
 		self.seatno = self.sockObj.receiveSeat()
+		threading.Thread(target=self.sockObj.recvTableData).start()
 		
 		self.fps = pygame.time.Clock()
 		self.initStateVariables()
@@ -79,6 +80,7 @@ class UI():
 		self.displayPotPrevRect = None
 		
 	def applyState(self, update):
+		self.prevState = update
 		self.UIplayerList = update['playerlist']
 		self.UIcommunityCards = update['comcards']
 		self.UIpots = update['pots']
@@ -98,7 +100,8 @@ class UI():
 					#print "Seat: {0}. Money: {1}. Hand: {2}".format(i, x.money, x.hand)
 					self.seats[i].setName(x.name)
 					self.seats[i].setMoney(x.money)
-					self.seats[i].setAvatar(x.GSRData)
+					#self.seats[i].setAvatar(x.GSRData)
+					#print "IN UI, avghighdata = {0}".format(x.biodataAvgHigh)
 					if x.hand != []:
 						self.seats[i].setCards(x.hand)
 				else:
@@ -144,7 +147,7 @@ class UI():
 			for event in pygame.event.get():
 			
 				if event.type == QUIT:
-					self.socket.close()
+					self.sockObj.socket.close()
 					pygame.quit()
 					sys.exit()
 					
@@ -170,10 +173,10 @@ class UI():
 						#self.linker.printTableState()
 					elif event.key == K_1:
 						self.displayState()
-						
-			if time.time() - self.startTime > 0.5:
+			
+			if self.prevState != self.sockObj.gameState:
 				#update = UISocket.getTableData(self.socket)
-				update = self.sockObj.getTableData()
+				update = self.sockObj.gameState
 				self.startTime = time.time()
 				if update != {} and update != None:
 					self.applyState(update)
@@ -406,27 +409,20 @@ class UISeat():
 		self._displayCards()
 		
 	def setAvatar(self, biodata):
-		print "in1 {0}".format(biodata)
+		print "roc: {0}".format(biodata)
 		if biodata < 147:
-			print "if 1"
 			self._changeAv("resources/images/avatar-blue.png")
 		elif biodata < 147*2:
-			print "if 2"
 			self._changeAv("resources/images/avatar-purple.png")
 		elif biodata < 147*3:
-			print "if 3"
 			self._changeAv("resources/images/avatar-green.png")
 		elif biodata < 147*4:
-			print "if 4"
 			self._changeAv("resources/images/avatar.png")
 		elif biodata < 147*5:
-			print "if 5"
 			self._changeAv("resources/images/avatar-yellow.png")
 		elif biodata < 147*6:
-			print "if 6"
 			self._changeAv("resources/images/avatar-orange.png")
 		elif biodata < 147*7:
-			print "if 7"
 			self._changeAv("resources/images/avatar-red.png")
 	
 	def setDefault(self):

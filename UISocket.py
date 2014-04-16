@@ -5,10 +5,13 @@ class UISocket():
 	def __init__(self):
 		self.socket = self.clientSocket()
 		self.timeout = 10
+		
+		
+		self.gameState = {}
 
 	def clientSocket(self):
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		s.connect(('127.0.0.1', 2000))
+		s.connect(('127.0.0.1', 20000))
 		
 		#remove this: code for getting out of process
 		"""
@@ -18,38 +21,29 @@ class UISocket():
 		else:
 			s.send('start')
 		"""
-			
-		s.setblocking(0)
+		s.settimeout(5)
 		return s
 		
 	def recvInfo(self, timeout):
+		self.socket.settimeout(timeout)
 		allData = None
-		data = ''
+		buffer = ''
 		length = None
-		
-		beginTime = time.time()
-		while time.time() - beginTime < timeout:
+		while True:
 			try:
-				data = self.socket.recv(4096)
+				buffer = self.socket.recv(4096)
 			except:
-				pass
+				raise
 			
-			if data != '' and allData == None:
-				lengthStr, sep, payload = data.partition(':#:')
-				length = int(lengthStr)
-				allData = payload
-				data = ''
-			elif data != '' and allData != None:
-				allData += data
-				data = ''
-				
-			if length != None:
-				if len(allData) == length:
-					return allData
-				
-				
-		#exceed timeout: exit
-		raise socket.timeout
+			if length == None:
+				if ":#:" in buffer:
+					lengthStr, sep, buffer = buffer.partition(':#:')
+					length = int(lengthStr)
+			
+			if len(buffer) >= length:
+				allData = buffer[:length]
+				buffer = buffer[length:]
+				return allData
 		
 	def sendInfo(self, data):
 		try:
@@ -60,36 +54,33 @@ class UISocket():
 			raise
 			
 		
-	def getTableData(self):
-		#recv
-		self.allTableData = None
-		self.tableData = ''
-		self.dataLength = None
+	def recvTableData(self):
 		
-		try:
-			self.tableData = self.socket.recv(4096)
-		except:
-			pass
-			
-		if self.tableData != '' and self.allTableData == None:
-			lengthStr, sep, payload = self.tableData.partition(':#:')
-			self.dataLength = int(lengthStr)
-			self.allTableData = payload
-			self.tableData = ''
-		elif self.tableData != '' and self.allTableData != None:
-			self.allTableData += self.tableData
-			self.tableData = ''
-			
-		if self.dataLength != None:
-			if len(self.allTableData) == self.dataLength:
-				state = cPickle.loads(self.allTableData)
-				self.allTableData = None
-				self.tableData = ''
-				self.dataLength = None
-				return state
+		buffer = ''
+		dataLength = None
+		stillAlive = True
 		
-		# Data is not altogether yet: return None
-		return None
+		while stillAlive:
+		
+			try:
+				buffer += self.socket.recv(4096)
+			except socket.error as msg:
+				self.socket.close()
+				stillAlive = False
+				break
+				
+			if dataLength == None:
+				if ":#:" in buffer:
+					lengthStr, sep, buffer = buffer.partition(':#:')
+					dataLength = int(lengthStr)
+			
+			if len(buffer) >= dataLength:
+				pickleState = buffer[:dataLength]
+				buffer = buffer[dataLength:]
+				self.gameState = cPickle.loads(pickleState)
+				dataLength = None
+					
+				
 			
 	def sendCommand(self, command):
 		try:

@@ -1,2 +1,3 @@
-cd C:\Users\Joe\Documents\GitHub\Biopoker
+@echo off
+cd %~dp0
 python TableMain.py 2

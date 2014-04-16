@@ -1,0 +1,86 @@
+<xml>
+	<process language="python" class="..\..\fakevilistus\fakevilistus.py">
+        <parameter>1</parameter>
+	</process>
+    <process language="python" class="..\Collectors\VilistusCollector.py" name="Vilistus Collector">
+        <parameter name="vilistusHost">127.0.0.1</parameter>
+        <parameter name="vilistusPort">49990</parameter>
+        <parameter name="outport">50001</parameter>
+        <parameter name="channels">3</parameter>
+        <channel name="GSR" num="0"/>
+        <channel name="ECG" num="1"/>
+        <channel name="RSP" num="2"/>
+    </process>
+    
+    <process language="python" class="..\Processors\GSRProcessor.py" name="GSR RoC Processor">
+        <parameter name="inHost">0@127.0.0.1</parameter>
+        <parameter name="inPort">50001</parameter>
+        <parameter name="outport">50006</parameter>
+        <parameter name="outputRatio">8</parameter>
+    </process>
+    <!--
+    <process language="python" class="..\Collectors\VilistusCollector.py" name="Vilistus Collector">
+        <parameter name="vilistusHost">127.0.0.1</parameter>
+        <parameter name="vilistusPort">49991</parameter>
+        <parameter name="outport">50002</parameter>
+        <parameter name="channels">3</parameter>
+        <channel name="GSR" num="0"/>
+        <channel name="ECG" num="1"/>
+        <channel name="RSP" num="2"/>
+    </process>
+    <process language="python" class="..\Processors\GSRProcessor.py" name="GSR RoC Processor">
+        <parameter name="inHost">0@127.0.0.1</parameter>
+        <parameter name="inPort">50002</parameter>
+        <parameter name="outport">50007</parameter>
+        <parameter name="outputRatio">8</parameter>
+    </process>
+ 
+    <process language="python" class="..\Collectors\VilistusCollector.py" name="Vilistus Collector">
+        <parameter name="vilistusHost">127.0.0.1</parameter>
+        <parameter name="vilistusPort">49992</parameter>
+        <parameter name="outport">50003</parameter>
+        <parameter name="channels">3</parameter>
+        <channel name="GSR" num="0"/>
+        <channel name="ECG" num="1"/>
+        <channel name="RSP" num="2"/>
+    </process>
+    <process language="python" class="..\Processors\GSRProcessor.py" name="GSR RoC Processor">
+        <parameter name="inHost">0@127.0.0.1</parameter>
+        <parameter name="inPort">50003</parameter>
+        <parameter name="outport">50008</parameter>
+        <parameter name="outputRatio">8</parameter>
+    </process>
+    
+    <process language="python" class="..\Collectors\VilistusCollector.py" name="Vilistus Collector">
+        <parameter name="vilistusHost">127.0.0.1</parameter>
+        <parameter name="vilistusPort">49993</parameter>
+        <parameter name="outport">50004</parameter>
+        <parameter name="channels">3</parameter>
+        <channel name="GSR" num="0"/>
+        <channel name="ECG" num="1"/>
+        <channel name="RSP" num="2"/>
+    </process>
+    <process language="python" class="..\Processors\GSRProcessor.py" name="GSR RoC Processor">
+        <parameter name="inHost">0@127.0.0.1</parameter>
+        <parameter name="inPort">50004</parameter>
+        <parameter name="outport">50009</parameter>
+        <parameter name="outputRatio">8</parameter>
+    </process>
+    
+    <process language="python" class="..\Collectors\VilistusCollector.py" name="Vilistus Collector">
+        <parameter name="vilistusHost">127.0.0.1</parameter>
+        <parameter name="vilistusPort">49994</parameter>
+        <parameter name="outport">50005</parameter>
+        <parameter name="channels">3</parameter>
+        <channel name="GSR" num="0"/>
+        <channel name="ECG" num="1"/>
+        <channel name="RSP" num="2"/>
+    </process>
+    <process language="python" class="..\Processors\GSRProcessor.py" name="GSR RoC Processor">
+        <parameter name="inHost">0@127.0.0.1</parameter>
+        <parameter name="inPort">50005</parameter>
+        <parameter name="outport">50010</parameter>
+        <parameter name="outputRatio">8</parameter>
+    </process>
+	-->
+</xml>

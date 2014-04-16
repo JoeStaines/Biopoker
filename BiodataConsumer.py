@@ -3,18 +3,18 @@ import sys,time
 
 class BiodataConsumer():
 
-    def __init__(self, host, port, table, seatNo):
+    def __init__(self, host, port, table, player):
         self.consumer = Consumer(host,int(port), self)
         self.table = table
-        self.seatNo = seatNo
+        self.player = player
 
     def run(self):
         while(True):
             self.consumer.waitData()
             data = self.consumer.getData()
             if data != None:
-				if self.table.playerList[self.seatNo] != None:
-					self.table.playerList[self.seatNo].GSRData = int(data)
+				print data
+				self.player.addBiodata(float(data))
             
             
 def main(host,port):

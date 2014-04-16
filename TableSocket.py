@@ -1,11 +1,12 @@
-import socket, sys, time, cPickle, thread, copy
+import socket, sys, time, cPickle, threading, copy
 from Player import Player
+from BiodataConsumer import BiodataConsumer
 
 stateData = {}
 
 def socketListener(table, numplayers):
 	serversock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	serversock.bind(('127.0.0.1', 2000))
+	serversock.bind(('127.0.0.1', 20000))
 	serversock.listen(1)
 	while 1:
 		conn, addr = serversock.accept()
@@ -19,22 +20,15 @@ def socketListener(table, numplayers):
 		if len(table.getPlayers()) == numplayers:
 			table.beginRound()
 		
-		# remove this: code for getting out of process
-		"""
-		data = ''
-		while not data:
-			try:
-				data = conn.recv(4096)
-			except:
-				pass
-		if data == 'end':
-			sys.exit()
-		"""
-		conn.setblocking(0)
+		consumer = BiodataConsumer("127.0.0.1", 50006, table, table.playerList[seatNum])
+		threading.Thread(target=consumer.run).start()
+		
 		sendSeatNumber(conn, seatNum)
 		
-		thread.start_new_thread(receiveCommand, (conn, table,seatNum))
-		thread.start_new_thread(sendStateData, (conn, table,seatNum))
+		#thread.start_new_thread(receiveCommand, (conn, table,seatNum))
+		#thread.start_new_thread(sendStateData, (conn, table,seatNum))
+		threading.Thread(target=receiveCommand, args=(conn,table,seatNum)).start()
+		threading.Thread(target=sendStateData, args=(conn, table, seatNum)).start()
 		
 				
 def receiveCommand(conn, table, seat):
@@ -73,7 +67,8 @@ def sendStateData(conn, table, seat):
 			pickleState = cPickle.dumps(stateData)
 			try:
 				sendInfo(conn, pickleState)
-			except:
+			except socket.error as msg:
+				print msg
 				if table.playerList[seat] != None:
 					table.playerRemoveList.append(table.playerList[seat])
 					print table.playerRemoveList
@@ -88,33 +83,25 @@ def sendStateData(conn, table, seat):
 			time.sleep(0.1)
 	
 def recvInfo(conn, timeout):
+	conn.settimeout(timeout)
 	allData = None
-	data = ''
+	buffer = ''
 	length = None
-	
-	beginTime = time.time()
-	while time.time() - beginTime < timeout:
+	while True:
 		try:
-			data = conn.recv(4096)
+			buffer = conn.recv(4096)
 		except:
-			time.sleep(0.1)
+			raise
 		
-		if data != '' and allData == None:
-			lengthStr, sep, payload = data.partition(':#:')
-			length = int(lengthStr)
-			allData = payload
-			data = ''
-		elif data != '' and allData != None:
-			allData += data
-			data = ''
-			
-		if length != None:
-			if len(allData) == length:
-				return allData
-			
-			
-	#exceed timeout: exit
-	raise socket.timeout
+		if length == None:
+			if ":#:" in buffer:
+				lengthStr, sep, buffer = buffer.partition(':#:')
+				length = int(lengthStr)
+		
+		if len(buffer) >= length:
+			allData = buffer[:length]
+			buffer = buffer[length:]
+			return allData
 	
 def sendInfo(conn, data):
 	try:
