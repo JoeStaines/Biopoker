@@ -11,7 +11,11 @@ class UISocket():
 
 	def clientSocket(self):
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		s.connect(('127.0.0.1', 20000))
+		ipaddr = raw_input("IP Address of server: ")
+		if ipaddr == '':
+			ipaddr = '127.0.0.1'
+			
+		s.connect((ipaddr, 20000))
 		
 		#remove this: code for getting out of process
 		"""

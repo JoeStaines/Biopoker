@@ -37,9 +37,9 @@ class UI():
 		pygame.init()
 		self.prevState = {}
 		
-		#self.socket = UISocket.clientSocket()
-		#UISocket.getAndSendName(self.socket)
-		#self.seatno = UISocket.receiveSeat(self.socket)
+		# self.socket = UISocket.clientSocket()
+		# UISocket.getAndSendName(self.socket)
+		# self.seatno = UISocket.receiveSeat(self.socket)
 		self.sockObj = UISocket()
 		self.sockObj.getAndSendName()
 		self.seatno = self.sockObj.receiveSeat()
