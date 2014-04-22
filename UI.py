@@ -175,7 +175,6 @@ class UI():
 						self.displayState()
 			
 			if self.prevState != self.sockObj.gameState:
-				#update = UISocket.getTableData(self.socket)
 				update = self.sockObj.gameState
 				self.startTime = time.time()
 				if update != {} and update != None:

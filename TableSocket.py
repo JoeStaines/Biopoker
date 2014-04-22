@@ -6,7 +6,8 @@ stateData = {}
 
 def socketListener(table, numplayers):
 	serversock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	serversock.bind(('127.0.0.1', 20000))
+	print "IP Address is {0}".format(socket.gethostbyname(socket.gethostname()))
+	serversock.bind((socket.gethostbyname(socket.gethostname()), 20000))
 	serversock.listen(1)
 	while 1:
 		conn, addr = serversock.accept()
@@ -25,8 +26,6 @@ def socketListener(table, numplayers):
 		
 		sendSeatNumber(conn, seatNum)
 		
-		#thread.start_new_thread(receiveCommand, (conn, table,seatNum))
-		#thread.start_new_thread(sendStateData, (conn, table,seatNum))
 		threading.Thread(target=receiveCommand, args=(conn,table,seatNum)).start()
 		threading.Thread(target=sendStateData, args=(conn, table, seatNum)).start()
 		
@@ -89,7 +88,7 @@ def recvInfo(conn, timeout):
 	length = None
 	while True:
 		try:
-			buffer = conn.recv(4096)
+			buffer += conn.recv(4096)
 		except:
 			raise
 		

@@ -1,0 +1,16 @@
+<xml>
+	<process language="python" class="..\Collectors\QSensorCollector.py" name="QSensor1(M9)">
+        <parameter name="COM">COM12</parameter>
+        <parameter name="outport">49994</parameter>
+		<channel name="GSR" num="4"/>
+    </process>
+	
+	<process language="python" class="..\Processors\GSRProcessor.py" name="GSRProcessor1">
+        <parameter name="inHost">5@127.0.0.1</parameter>
+        <parameter name="inPort">49994</parameter>
+        <parameter name="outport">49991</parameter>
+		<parameter name="windowSize">1</parameter>
+    </process>
+
+
+</xml>

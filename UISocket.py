@@ -35,7 +35,7 @@ class UISocket():
 		length = None
 		while True:
 			try:
-				buffer = self.socket.recv(4096)
+				buffer += self.socket.recv(4096)
 			except:
 				raise
 			

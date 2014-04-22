@@ -146,13 +146,10 @@ class Table():
 		return number
 	
 	def collectSmallBlind(self):
-		#self.currentBet[0] = self.smallBlind
 		if self.noOfPlayers() == 2:
 			player = self.playerList[self.curDealerSeatNo]
 		else:
 			player, seatNo = self.findNthPlayerFromSeat(self.curDealerSeatNo, 1)
-			
-		#self.collectMoney(player, self.smallBlind)
 			
 		if player.money < self.smallBlind:
 			self.pots[-1:-1] = [player.money]

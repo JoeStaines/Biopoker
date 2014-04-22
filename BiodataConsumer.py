@@ -32,7 +32,8 @@ class BiodataConsumer():
 				self.highPeak = data
 		
 			if len(self.biodataValuesHigh) > (self.MAX_QUEUE_SIZE - 10) and data > self.biodataAvgHigh * 2:
-				print "DETECTHED HIGH THRESHOLD"
+				pass
+				#print "DETECTHED HIGH THRESHOLD"
 			
 			self.biodataValuesHigh.append(data)
 			self.biodataAvgHigh = sum(self.biodataValuesHigh) / len(self.biodataValuesHigh)
@@ -41,14 +42,15 @@ class BiodataConsumer():
 				self.lowPeak = data
 		
 			if len(self.biodataValuesLow) > (self.MAX_QUEUE_SIZE - 10) and data < self.biodataAvgLow * 2:
-				print "DETECTED LOW THRESHOLD"
+				pass
+				#print "DETECTED LOW THRESHOLD"
 			
 			self.biodataValuesLow.append(data)
 			self.biodataAvgLow = sum(self.biodataValuesLow) / len(self.biodataValuesLow)
 				
-		print "High len = {0} || Low len = {1}".format(len(self.biodataValuesHigh), len(self.biodataValuesLow))
-		print "High avg = {0} || Low avg = {1}".format(self.biodataAvgHigh, self.biodataAvgLow)
-		print "High peak = {0} || Low peak = {1}\n".format(self.highPeak, self.lowPeak)
+		#print "High len = {0} || Low len = {1}".format(len(self.biodataValuesHigh), len(self.biodataValuesLow))
+		#print "High avg = {0} || Low avg = {1}".format(self.biodataAvgHigh, self.biodataAvgLow)
+		#print "High peak = {0} || Low peak = {1}\n".format(self.highPeak, self.lowPeak)
 			
 def main(host,port):
 	chart = BiodataConsumer(host,port)

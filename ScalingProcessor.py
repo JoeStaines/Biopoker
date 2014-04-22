@@ -1,17 +1,46 @@
-import wx, threading
-from BaselineConsumer import BaselineConsumer
+from Vicarious.Processors.Processor import Processor
 
-class BaselineUI(wx.Frame):
-	def __init__(self, parent, title):
-		super(BaselineUI, self).__init__(parent, title=title, size=(200,200))
-		self.InitUI()
-		self.consumer = BaselineConsumer('127.0.0.1', 49991, self.minBox, self.maxBox)
+class ScalingProcessor(Processor):
+	def __init__(self):
+		Processor.__init__(self, "ScalingProcessor", [("source", "source data to be scaled")], [("Scaled data")], [], self.InitUI)
+		self.oldmin = 0
+		self.oldmax = 0
+		self.newmin = -1.0
+		self.newmax = 1.0
+		self.isBaselineRunning = False
+		self.hasBaselineEnded = False
+		self.run()
 		
-		self.Centre()
-		self.Show()
+	def process(self,timeStamp,values,queueNo):
+		datain = values[0]
+		curValue = float(datain)
+		if self.isBaselineRunning:
+			self.testMinMax(curValue)
 		
-	def InitUI(self):
-		panel = wx.Panel(self)
+		if self.hasBaselineEnded:
+			scaledValue = self.scale(curValue)
+			print scaledValue
+			self.addProcessedValues(scaledValue)
+		
+	def testMinMax(self, value):
+		if value > self.oldmax:
+			self.oldmax = value
+			self.maxBox.SetValue(str(value).encode('utf-8'))
+		elif value < self.oldmin:
+			self.oldmin = value
+			self.minBox.SetValue(str(value).encode('utf-8'))
+		
+	def scale(self, value):
+		oldscale = self.oldmax - self.oldmin
+		newscale = self.newmax - self.newmin
+		return (newscale * (value - self.oldmin) / oldscale) + self.newmin
+		
+	def InitUI(self, frame):
+		print "in gui create"
+		import wx
+		frame.SetSize((200,200))
+		
+		panel = wx.Panel(frame)
 		
 		vbox = wx.BoxSizer(wx.VERTICAL)
 		
@@ -57,20 +86,16 @@ class BaselineUI(wx.Frame):
 		panel.SetSizer(vbox)
 		
 		# Bind items
-		self.Bind(wx.EVT_BUTTON, self.OnStartPress, id=startButton.GetId())
-		self.Bind(wx.EVT_BUTTON, self.OnStopPress, id=stopButton.GetId())
+		frame.Bind(wx.EVT_BUTTON, self.OnStartPress, id=startButton.GetId())
+		frame.Bind(wx.EVT_BUTTON, self.OnStopPress, id=stopButton.GetId())
 		
 	def OnStartPress(self, event):
 		self.onOffText.SetLabel('On')
-		self.consumer.continueRunning = True
-		threading.Thread(target=self.consumer.run).start()
+		self.isBaselineRunning = True
 		
 	def OnStopPress(self, event):
 		self.onOffText.SetLabel('Off')
-		self.consumer.continueRunning = False
-
+		self.isBaselineRunning = False
+		self.hasBaselineEnded = True
 		
-if __name__ == "__main__":
-	app = wx.App()
-	frame = BaselineUI(None, 'Baseline')
-	app.MainLoop()
+if __name__ == "__main__": ScalingProcessor()
