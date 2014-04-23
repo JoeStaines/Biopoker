@@ -100,7 +100,7 @@ class UI():
 					#print "Seat: {0}. Money: {1}. Hand: {2}".format(i, x.money, x.hand)
 					self.seats[i].setName(x.name)
 					self.seats[i].setMoney(x.money)
-					#self.seats[i].setAvatar(x.GSRData)
+					self.seats[i].setAvatar(x.threshValue,x.peaksPerMin)
 					#print "IN UI, avghighdata = {0}".format(x.biodataAvgHigh)
 					if x.hand != []:
 						self.seats[i].setCards(x.hand)
@@ -176,7 +176,6 @@ class UI():
 			
 			if self.prevState != self.sockObj.gameState:
 				update = self.sockObj.gameState
-				self.startTime = time.time()
 				if update != {} and update != None:
 					self.applyState(update)
 					self.updateState()
@@ -407,22 +406,25 @@ class UISeat():
 		self.cards = hand
 		self._displayCards()
 		
-	def setAvatar(self, biodata):
-		print "roc: {0}".format(biodata)
-		if biodata < 147:
-			self._changeAv("resources/images/avatar-blue.png")
-		elif biodata < 147*2:
-			self._changeAv("resources/images/avatar-purple.png")
-		elif biodata < 147*3:
-			self._changeAv("resources/images/avatar-green.png")
-		elif biodata < 147*4:
-			self._changeAv("resources/images/avatar.png")
-		elif biodata < 147*5:
-			self._changeAv("resources/images/avatar-yellow.png")
-		elif biodata < 147*6:
-			self._changeAv("resources/images/avatar-orange.png")
-		elif biodata < 147*7:
-			self._changeAv("resources/images/avatar-red.png")
+	def setAvatar(self, threshvalue, peakspermin):
+		print "threshvalue: {0} || peakspermin: {1}".format(threshvalue, peakspermin)
+		
+		if threshvalue > 0.0:
+			if threshvalue == 1.0:
+				self._changeAv("resources/images/avatar-purple.png")
+			elif threshvalue == 2.0:
+				self._changeAv("resources/images/avatar-yellow.png")
+			elif threshvalue == 3.0:
+				self._changeAv("resources/images/avatar-orange.png")
+			elif threshvalue == 4.0:
+				self._changeAv("resources/images/avatar-red.png")
+		else:
+			if peakspermin < 5:
+				self._changeAv("resources/images/avatar.png")
+			elif peakspermin >= 10:
+				self._changeAv("resources/images/avatar-orange.png")
+			elif peakspermin >= 5:
+				self._changeAv("resources/images/avatar-yellow.png")
 	
 	def setDefault(self):
 		self.setName('-')

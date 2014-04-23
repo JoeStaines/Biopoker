@@ -9,48 +9,28 @@ class BiodataConsumer():
 		self.table = table
 		self.player = player
 		
-		self.MAX_QUEUE_SIZE = 1000
-		
-		self.biodataValuesHigh = deque([], self.MAX_QUEUE_SIZE)
-		self.biodataValuesLow = deque([], self.MAX_QUEUE_SIZE)
-		self.biodataAvgHigh = 0
-		self.biodataAvgLow = 0
-		
-		self.highPeak = 0
-		self.lowPeak = 0
+		self.peaksPerMin = deque([], 1000)
+		self.lastValue = None
 		
 	def run(self):
 		while(True):
 			self.consumer.waitData()
 			data = self.consumer.getData()
 			if data != None:
-				self.addBiodata(float(data))
+				self.processData(float(data))
 				
-	def addBiodata(self, data):
-		if data > 0:
-			if data > self.highPeak:
-				self.highPeak = data
-		
-			if len(self.biodataValuesHigh) > (self.MAX_QUEUE_SIZE - 10) and data > self.biodataAvgHigh * 2:
-				pass
-				#print "DETECTHED HIGH THRESHOLD"
+	def processData(self, value):		
+		if value == 0.0 and self.lastValue > 0.0: #reached a peak, add to list
+			self.peaksPerMin.append(time.time())
 			
-			self.biodataValuesHigh.append(data)
-			self.biodataAvgHigh = sum(self.biodataValuesHigh) / len(self.biodataValuesHigh)
-		else:
-			if data < self.lowPeak:
-				self.lowPeak = data
-		
-			if len(self.biodataValuesLow) > (self.MAX_QUEUE_SIZE - 10) and data < self.biodataAvgLow * 2:
-				pass
-				#print "DETECTED LOW THRESHOLD"
-			
-			self.biodataValuesLow.append(data)
-			self.biodataAvgLow = sum(self.biodataValuesLow) / len(self.biodataValuesLow)
+		# Prune any peaks > 60 secs
+		if len(self.peaksPerMin) > 0:
+			if time.time() - self.peaksPerMin[0] >= 60.0:
+				self.peaksPerMin.popleft()
 				
-		#print "High len = {0} || Low len = {1}".format(len(self.biodataValuesHigh), len(self.biodataValuesLow))
-		#print "High avg = {0} || Low avg = {1}".format(self.biodataAvgHigh, self.biodataAvgLow)
-		#print "High peak = {0} || Low peak = {1}\n".format(self.highPeak, self.lowPeak)
+		self.player.threshValue = value
+		self.player.peaksPerMin = len(self.peaksPerMin)
+		self.lastValue = value
 			
 def main(host,port):
 	chart = BiodataConsumer(host,port)

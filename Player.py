@@ -9,8 +9,8 @@ class Player():
 		self.betAmount = []
 		self.isHandLive = False
 		
-		self.biodataAvgHigh = 0
-		self.biodataAvgLow = 0
+		self.threshValue = 0.0
+		self.peaksPerMin = 0
 		
 		
 	def removeMoney(self, amount):

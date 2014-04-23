@@ -36,7 +36,6 @@ class ScalingProcessor(Processor):
 		return (newscale * (value - self.oldmin) / oldscale) + self.newmin
 		
 	def InitUI(self, frame):
-		print "in gui create"
 		import wx
 		frame.SetSize((200,200))
 		

@@ -18,6 +18,29 @@
         <parameter name="outport">50006</parameter>
         <parameter name="outputRatio">8</parameter>
     </process>
+	
+	<process language="python" class="..\..\..\..\..\ScalingProcessor.py" name="Scaling Processor">
+        <parameter name="inHost">127.0.0.1</parameter>
+        <parameter name="inPort">50006</parameter>
+        <parameter name="outport">50007</parameter>
+		<parameter name="showGui">True</parameter>
+    </process>
+	
+	
+    <process language="python" class="..\Processors\ThresholdProcessor.py" name="Threshold Processor">
+        <parameter name="inHost">127.0.0.1</parameter>
+        <parameter name="inPort">50007</parameter>
+        <parameter name="outport">50008</parameter>
+        <parameter name="defaultValues">0.25:1;0.5:2;0.75:3;1.0:4</parameter>
+		<parameter name="countrate">-1.0</parameter>
+		<parameter name="useAbsoluteValues">True</parameter>
+		<parameter name="startTime">0</parameter>
+		<parameter name="stopTime">-1</parameter>
+        <parameter name="showGui">True</parameter>
+        <parameter name="name">GSR RoC Threshold Processor</parameter>
+    </process>
+	
+	
     <!--
     <process language="python" class="..\Collectors\VilistusCollector.py" name="Vilistus Collector">
         <parameter name="vilistusHost">127.0.0.1</parameter>

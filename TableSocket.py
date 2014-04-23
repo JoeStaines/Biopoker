@@ -7,7 +7,8 @@ stateData = {}
 def socketListener(table, numplayers):
 	serversock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	print "IP Address is {0}".format(socket.gethostbyname(socket.gethostname()))
-	serversock.bind((socket.gethostbyname(socket.gethostname()), 20000))
+	#serversock.bind((socket.gethostbyname(socket.gethostname()), 20000))
+	serversock.bind(("127.0.0.1", 20000))
 	serversock.listen(1)
 	while 1:
 		conn, addr = serversock.accept()
@@ -21,7 +22,7 @@ def socketListener(table, numplayers):
 		if len(table.getPlayers()) == numplayers:
 			table.beginRound()
 		
-		consumer = BiodataConsumer("127.0.0.1", 50006, table, table.playerList[seatNum])
+		consumer = BiodataConsumer("127.0.0.1", 50008, table, table.playerList[seatNum])
 		threading.Thread(target=consumer.run).start()
 		
 		sendSeatNumber(conn, seatNum)
@@ -54,7 +55,7 @@ def receiveCommand(conn, table, seat):
 			
 			
 def sendStateData(conn, table, seat):
-	delay = 0.5
+	delay = 0.1
 	begin = time.time()
 	table.setState()
 	
@@ -79,7 +80,7 @@ def sendStateData(conn, table, seat):
 					
 			begin = time.time()
 		else:
-			time.sleep(0.1)
+			time.sleep(0.05)
 	
 def recvInfo(conn, timeout):
 	conn.settimeout(timeout)
