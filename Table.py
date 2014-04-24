@@ -2,8 +2,6 @@ from CustomExceptions import *
 from SevenEval import *
 import random, math
 
-# TODO: game ending scenario
-
 class Table():
 	
 	PRE_FLOP = 0
@@ -35,6 +33,9 @@ class Table():
 		self.gameState = Table.PRE_FLOP
 		
 	def setState(self):
+		"""
+		Sets up a dictionary of the current state of the game that will be sent and used by the clients
+		"""
 		self.stateDict = {'playerlist': self.playerList[:], \
 							'comcards': self.communityCards[:], \
 							'pots':		self.pots[:], \
@@ -43,6 +44,11 @@ class Table():
 							'isGameEnd': self.isGameEnd}
 		
 	def addPlayer(self, player):
+		"""
+		Adds a ``player`` to the game
+		
+		Raises a ``MaxBoundError`` if the player list is full and cannot be added
+		"""
 		for i in range(len(self.playerList)):
 			if self.playerList[i] == None:
 				self.playerList[i] = player
@@ -52,15 +58,32 @@ class Table():
 		raise MaxBoundError
 		
 	def getPlayers(self):
+		"""
+		Makes a call to :func:`getAndFilterPlayers` and returns all players in the game
+		"""
 		return self.getAndFilterPlayers(lambda x: x)
 		
 	def getLivePlayers(self):
+		"""
+		Makes a call to :func:`getAndFilterPlayers` and returns all players that are still live 
+		(a.k.a have not folded)
+		"""
 		return self.getAndFilterPlayers(lambda x: x if x.isHandLive == True else None)
 		
 	def getSuitablePlayers(self):
+		"""
+		Makes a call to :func:`getAndFilterPlayers` and returns all players that are live and have
+		more than 0 money
+		"""
 		return self.getAndFilterPlayers(lambda x: x if x.isHandLive == True and x.money > 0 else None)
 		
 	def getAndFilterPlayers(self, filterFunc):
+		"""
+		Central function that is called by other 'getPlayer' like functions
+		
+		``filterFunc`` is a function which other functions can specify (using lambdas usually)
+		in order to filter specific types of players in the game.
+		"""
 		playerlist = []
 		for x in self.playerList:
 			if x != None:
@@ -73,29 +96,57 @@ class Table():
 		self.playerList[pos] = player
 	
 	def removePlayer(self, player):
+		"""
+		Removes a player from the playerlist
+		"""
 		for i in range(len(self.playerList)):
 			if self.playerList [i] == player:
 				self.playerList[i] = None
 				return
 				
 	def removeFromPlayerList(self):
+		"""
+		Removes all the players that are defined in ``self.playerRemoveList``
+		"""
 		for x in self.playerRemoveList:
 			self.removePlayer(x)
 				
 	def reinitDeck(self):
+		"""
+		Creates a new shuffled deck of cards
+		"""
 		self.deck = range(52)
 		random.shuffle(self.deck)
 		
 	def addSidePot(self):
+		"""
+		Adds a new side pot
+		"""
 		self.pots.append(0)
 		
 	def addToPot(self, amount, index):
+		"""
+		Add to pot at ``index`` by ``amount``
+		"""
 		self.pots[index] = self.pots[index] + amount
 		
 	def clearPot(self):
+		"""
+		Resets the pot completely so there is just one mainpot and no sidepots
+		"""
 		self.pots = [0]
 		
 	def comparePlayerBet(self, player, i):
+		"""
+		Compares a player's betAmount with the current bet at index ``i``. Used to determine if the ``player``
+		has met the current bet completely
+		
+		Returns:
+		
+		* ``1`` if the player's bet amount is less than the current bet amount for the pot
+		* ``0`` if the player's bet amount is equal
+		* ``-1`` if the player's bet amount is greater
+		"""
 		if player.betAmount[i] < self.currentBet[i]:
 			return 1
 		elif player.betAmount[i] == self.currentBet[i]:
@@ -104,6 +155,12 @@ class Table():
 			return -1
 			
 	def collectAnte(self):
+		"""
+		Collects the ante from all players
+		
+		If a player has a total amount of money that is less than the defined ante, then it uses that value
+		as the new ante that is taken from everyone else
+		"""
 		smallest = self._findSmallestMoney()
 					
 		if smallest < self.ante:
@@ -117,6 +174,9 @@ class Table():
 				self.pots[0] = self.pots[0] + newAnte
 				
 	def _findSmallestMoney(self):
+		"""
+		Find who has the least amount of money out of all the players and returns the amount that was smallest
+		"""
 		smallest = 99999999 # Just some high number
 		for x in self.playerList:
 			if x != None:
@@ -126,10 +186,17 @@ class Table():
 		return smallest
 	
 	def assignDealer(self):
+		"""
+		Finds the next player next to the current dealer to be the new dealer
+		"""
 		_, index = self.findNthPlayerFromSeat(self.curDealerSeatNo, 1)
 		self.curDealerSeatNo = index
 					
 	def findNthPlayerFromSeat(self, seat, n):
+		"""
+		From a starting point ``seat``, it goes around in clockwise order to find the next player that
+		is ``n`` seats away
+		"""
 		for i in range(1,7):
 			index = (seat + i) % 6
 			if self.playerList[index] != None:
@@ -139,6 +206,9 @@ class Table():
 					return (self.playerList[index], index)
 	
 	def noOfPlayers(self):
+		"""
+		Return the number of players in the game
+		"""
 		number = 0
 		for n in range(6):
 			if self.playerList[n] != None:
@@ -146,6 +216,9 @@ class Table():
 		return number
 	
 	def collectSmallBlind(self):
+		"""
+		Determines who is responsible for paying the small blind and collects it
+		"""
 		if self.noOfPlayers() == 2:
 			player = self.playerList[self.curDealerSeatNo]
 		else:
@@ -162,7 +235,12 @@ class Table():
 			player.betAmount.append(self.smallBlind)
 	
 	def collectBigBlind(self):
-	
+		"""
+		Determines who is responsible for paying the big blind and collects it.
+		
+		Resets the 'call' value so the next player still has to pay the full amount even if
+		the player who pays the big blind couldn't do so because of a lack of money
+		"""
 		self.setBigBlindBetAmount()
 		if self.noOfPlayers() == 2:
 			player, seatNo = self.findNthPlayerFromSeat(self.curDealerSeatNo, 1)
@@ -173,6 +251,9 @@ class Table():
 									# next player still has to pay full blind
 		
 	def setBigBlindBetAmount(self):
+		"""
+		Sets the big blind amount
+		"""
 		if sum(self.currentBet) < self.bigBlind:
 			if len(self.pots) > 1:
 				newbet = self.bigBlind - sum(self.currentBet)
@@ -181,6 +262,13 @@ class Table():
 			self.currentBet[-1] = newbet
 			
 	def collectMoney(self, player, amount):
+		"""
+		This function is responsible for collecting the money and accurately setting the bet amounts for
+		the pots and the players
+		
+		Steps through all the side bets in turn and pays the current bet for each side pot. If a player
+		cannot pay, then the another side pot is created using :func:`_slicePot`
+		"""
 		rangestart = len(player.betAmount) if len(player.betAmount) >= 0 else 0
 		for i in range(rangestart, len(self.pots)):
 			if player.money < self.currentBet[i]:
@@ -202,6 +290,10 @@ class Table():
 				self.currentBet[-1] = player.betAmount[-1]
 				
 	def _slicePot(self, i, player):
+		"""
+		Auxiliary function to :func:`collectMoney`. Will create a new side pot and re-evaluates the necessary side
+		pots and every player's bet amount so that they accurate reflect the true state of the pots
+		"""
 		if len(player.betAmount) < len(self.currentBet):
 			player.betAmount.append(player.money)
 		else:
@@ -221,17 +313,33 @@ class Table():
 				self._pruneBetAmount(x)
 		
 	def _pruneBetAmount(self, player):
+		"""
+		Auxiliary function to :func:`_slicePot`. Just pops the bet amount list if there is an extra ``0``
+		on the end
+		"""
 		if player.betAmount[-1] == 0:
 			player.betAmount.pop()
 
 	def determineAmountToCall(self, player):
+		"""
+		Determines the amount of money the ``player`` has to call to stay in the round
+		"""
 		return sum(self.currentBet) - sum(player.betAmount)
 	
 	def makeBet(self, player, amount):
+		"""
+		Collects the money for the bet through :func:'collectMoney' and sets the next turn through
+		:func:`setNextTurn`
+		"""
 		self.collectMoney(player, amount)
 		self.setNextTurn()
 		
 	def setNextTurn(self):
+		"""
+		Determines whose turn it is next from the list of live players
+		
+		Can determine the winner if all previous players have folded and there is only one live player left
+		"""
 		liveplayers = self.getLivePlayers()
 		if len(liveplayers) == 1:
 			winner = liveplayers.pop()
@@ -254,6 +362,9 @@ class Table():
 						playerUnsuitable = False
 					
 	def findNextSuitablePlayer(self, n):
+		"""
+		Finds the next suitable player that can take action.
+		"""
 		for _ in range(len(self.getPlayers())):
 			player, seat = self.findNthPlayerFromSeat(n, 1)
 			if self.playerList[seat].money > 0 and self.playerList[seat].isHandLive == True:
@@ -262,6 +373,12 @@ class Table():
 				n = seat
 
 	def deal(self):
+		"""
+		Deals the cards out from ``self.deck``
+		
+		Emulates real poker in the sense that it goes through each player one card at a time
+		until they all have 2 cards
+		"""
 		playerList = self.getPlayers()
 		start = self.curDealerSeatNo + 1
 		for i in range(len(playerList)*2):
@@ -269,28 +386,50 @@ class Table():
 			playerList[(start + i) % len(playerList)].isHandLive = True
 			
 	def dealCommunity(self, num):
+		"""
+		Deal a certain number of community cards from ``self.deck``. The number to deal is determined by the
+		parameter ``num``
+		"""
 		for _ in range(num):
 			self.communityCards.append(self.deck.pop())
 			
 	def determineBlinds(self):
+		"""
+		Determine the initial big and small blind amounts
+		"""
 		self.smallBlind = 5
 		self.bigBlind = 10
 		
 	def call(self, player):
+		"""
+		Makes a call to :func:`makeBet` using the value from :func:`determineAmountToCall`
+		"""
 		self.makeBet(player, self.determineAmountToCall(player))
 		self.setState()
 		
 	def raiseBet(self, player, amount):
+		"""
+		Raises the bet. The raise bet is the value returned from :func:`determineAmountToCall` + ``amount``
+		"""
 		_, self.roundEndSeat = self.findNthPlayerFromSeat(self.turn, self.noOfPlayers()-1)
 		self.makeBet(player, self.determineAmountToCall(player)+amount)
 		self.setState()
 		
 	def fold(self, player):
+		"""
+		Fold the ``player``'s hand
+		"""
 		player.isHandLive = False
 		self.setNextTurn()
 		self.setState()
 	
 	def setUpNextBetRound(self):
+		"""
+		Determines at what betting round the current game is at (preflop, flop, turn, river).
+		
+		Depending on what betting round it is, community cards are dealt here and also determines the player
+		who starts off the betting round
+		"""
 		if self.gameState == Table.PRE_FLOP:
 			self.gameState = Table.FLOP
 			self.dealCommunity(3)
@@ -314,12 +453,21 @@ class Table():
 			# Do showdown stuff here (evaluate hands, hand out pot, get ready for next game)
 			
 	def earlyEvaluation(self):
+		"""
+		Called from :func:`makeBet` when there is a situation where there are no suitable players
+		but there are still live hands that need to be won. This happens when multiple players are all in
+		and there is no one to check through the rest of the betting rounds
+		"""
 		self.dealCommunity(5 - len(self.communityCards))
 		self.gameState = Table.SHOWDOWN
 		self.evaluateWinner()
 		self.setUpNextGameRound()
 		
 	def getPlayersInPot(self, potIndex, livePlayers):
+		"""
+		Called from :func:`evaluateWinner`. From the list of `livePlayers`, gets all of the players in the
+		pot at `potIndex`
+		"""
 		players = []
 		for x in livePlayers:
 			if len(x.betAmount) > potIndex:
@@ -328,6 +476,11 @@ class Table():
 	
 	
 	def getWinners(self, evaluations, potIndex):
+		"""
+		Called from :func:`evaluateWinner`. Determines the winner(s) of the point defined at `potIndex`.
+		
+		There can be more than one winner if 2 or more players have a hand that has the same rank in poker
+		"""
 		# What evaluations looks like -> [(playerObj, handScore)]
 		winners = []
 		evaluations.sort(key=lambda x: x[1], reverse=True)
@@ -340,6 +493,13 @@ class Table():
 		return winners
 		
 	def handOutMoney(self, winners, potIndex):
+		"""
+		Called from :func:`evaluateWinner`. Hands out the spoils to all of the winners. This is at the side pot
+		level, not the whole pot, so the spoils are distributed evenly if there is more than one winner.
+		
+		If there is a remainder after the money has been distributed, a call to :func:`findWinnerNextToDealer`
+		is made and the remainder goes to that player
+		"""
 		amountWon = math.floor(self.pots[potIndex] / len(winners))
 		remainder = self.pots[potIndex] - (amountWon * len(winners))
 		for x in winners:
@@ -350,6 +510,10 @@ class Table():
 		player.money = player.money + remainder
 			
 	def findWinnerNextToDealer(self, winners):
+		"""
+		Called from :func:`handOutMoney`. From the list of `winners`, then winner closest to the dealer 
+		is found
+		"""
 		curIndex = self.curDealerSeatNo
 		while True:
 			player, seat = self.findNthPlayerFromSeat(curIndex, 1)
@@ -360,6 +524,10 @@ class Table():
 		
 	
 	def evaluateWinner(self):
+		"""
+		Top level function for evaluating the winner(s). Gets all the current live players and evaluates
+		their 7-card hand in terms of rank and the pot is distributed among the winners 
+		"""
 		if self.pots[-1] == 0:
 			self.pots.pop()
 		livePlayers = self.getLivePlayers()	
@@ -382,6 +550,11 @@ class Table():
 	# ############ Game Loop Logic ############
 	
 	def setUpNextGameRound(self):
+		"""
+		Resets various variables to make a clean game for the next round.
+		
+		Also responsible for determining the correct seat to be the next dealer
+		"""
 		self.pots = [0]
 		self.currentBet = [0]
 		self.reinitDeck()
@@ -394,14 +567,23 @@ class Table():
 		self.beginRound()
 		
 	def resetPlayerHands(self, players):
+		"""
+		From the list of `players`, resets their current hand ready for the next round
+		"""
 		for x in players:
 			x.hand = []
 			
 	def resetPlayerBetAmount(self, players):
+		"""
+		From the list of `players`, resets their current bet amount ready for the next round
+		"""
 		for x in players:
 			x.betAmount = []
 	
 	def beginRound(self):
+		"""
+		Removes any players who have no money left for this round and starts collecting the blinds 
+		"""
 		self.gameState = Table.PRE_FLOP
 		for p in self.getPlayers():
 			if p.money <= 0:

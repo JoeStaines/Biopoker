@@ -13,13 +13,20 @@ class BiodataConsumer():
 		self.lastValue = None
 		
 	def run(self):
+		"""
+		Thread run method. Waits on data to come in and then once received, sends it to :func:`processData`
+		"""
 		while(True):
 			self.consumer.waitData()
 			data = self.consumer.getData()
 			if data != None:
 				self.processData(float(data))
 				
-	def processData(self, value):		
+	def processData(self, value):	
+		"""
+		Evaluates the peaks per min based on the ``value`` and sends both the (possibly) new peaks per min value 
+		and the ``value`` through to the ``Player`` object
+		"""
 		if value == 0.0 and self.lastValue > 0.0: #reached a peak, add to list
 			self.peaksPerMin.append(time.time())
 			

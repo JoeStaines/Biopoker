@@ -10,6 +10,10 @@ class UISocket():
 		self.gameState = {}
 
 	def clientSocket(self):
+		"""
+		Creates a client socket that connects to a server socket. Will as for through command line 
+		what the server host is
+		"""
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		ipaddr = raw_input("IP Address of server: ")
 		if ipaddr == '':
@@ -29,6 +33,14 @@ class UISocket():
 		return s
 		
 	def recvInfo(self, timeout):
+		"""
+		Code that wraps around ``socket.recv``. Will set the timeout of the socket to whatever is specified in 
+		``timeout``.
+		
+		This function has some protection from the standard ``socket.recv`` function, as it is agreed between UISocket.py and TableSocket.py an agreed delimiter that is prefixed to the message to determine the length of 
+		the message being sent. Using that length, it then goes round in a loop until it has enough characters in
+		the buffer to collect all of the message and return it
+		"""
 		self.socket.settimeout(timeout)
 		allData = None
 		buffer = ''
@@ -50,6 +62,10 @@ class UISocket():
 				return allData
 		
 	def sendInfo(self, data):
+		"""
+		Sends info through the socket while prefixing the length of the message plus the agreed upon delimiter 
+		defined in UISocket.py and TableSocket.py
+		"""
 		try:
 			lengthPrefix = str(len(data)).encode('utf-8') + ':#:'
 			payload = lengthPrefix + data
@@ -59,6 +75,12 @@ class UISocket():
 			
 		
 	def recvTableData(self):
+		"""
+		Similar in essence to the function :func:`recvInfo`, but because this is used to get the table state data, 
+		it needs to run in a continuous loop and cannot return like :func:`recvInfo`. Because of this, it deals with
+		the logic of working with the received message internally and delivers the output to an instance variable that 
+		is read by the UI class
+		"""
 		
 		buffer = ''
 		dataLength = None
@@ -87,12 +109,18 @@ class UISocket():
 				
 			
 	def sendCommand(self, command):
+		"""
+		Sends the command (call, fold raise) through the socket
+		"""
 		try:
 			self.sendInfo(command)
 		except:
 			print "Failed to send command {0}".format(command)
 			
 	def getAndSendName(self):
+		"""
+		Gets the name of the player through command line interaction and sends it through the socket
+		"""
 		nameSuitable = False
 		while not nameSuitable:
 			name = raw_input('Your name: ')
@@ -108,6 +136,9 @@ class UISocket():
 			sys.exit()
 				
 	def receiveSeat(self):
+		"""
+		Receive the seat number of this specific client. Used to update client specific data in the UI
+		"""
 
 		try:
 			seatno = self.recvInfo(10)

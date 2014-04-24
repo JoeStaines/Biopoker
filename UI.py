@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# FIGURE OUT HOW TO UPDATE ONLY NEEDED STATES. PLAY LIST IS STILL BEING PASSED BY POINTER
-
 import pygame, sys, cPickle, time, threading
 from UISocket import UISocket
 from Player import Player
@@ -55,15 +53,21 @@ class UI():
 		
 		self.initPreviousDisplayRects()
 		
-		self.layoutTest()
+		self.layout()
 		pygame.display.set_caption('Biopoker')
 		
 		
 	def setDisplay(self):
+		"""
+		Setting the display areas ready fro PyGame
+		"""
 		self.window = pygame.display.set_mode((UI.wW, UI.wH), 0, 32)
 		self.playArea = pygame.display.get_surface()
 		
 	def initStateVariables(self):
+		"""
+		Initialise the variables used when unpacking state data from the server
+		"""
 		self.UIplayerList = []
 		self.UIcommunityCards = []
 		self.UIpots = []
@@ -73,6 +77,9 @@ class UI():
 		self.UIisGameEnd = False
 		
 	def initPreviousDisplayRects(self):
+		"""
+		Initialise the PyGame rects that will be used to blit back part of the background
+		"""
 		# This variable used in self.displayCalInfo
 		self.displayCallInfoPrevRect = None
 		
@@ -80,6 +87,9 @@ class UI():
 		self.displayPotPrevRect = None
 		
 	def applyState(self, update):
+		"""
+		Update the state variables from the dictionary ``update``
+		"""
 		self.prevState = update
 		self.UIplayerList = update['playerlist']
 		self.UIcommunityCards = update['comcards']
@@ -93,6 +103,10 @@ class UI():
 			print 'Game End'
 	
 	def updateState(self):
+		"""
+		Update the visuals of the game through the instance state. Sets things such as the player's money 
+		name and avatar and changes the turn marker for the current player's turn
+		"""
 		if not self.UIisGameEnd:
 			for i, x in enumerate(self.UIplayerList):
 				if x != None:
@@ -122,6 +136,9 @@ class UI():
 					break
 		
 	def displayState(self):
+		"""
+		Print out state information for debugging and testing
+		"""
 		print "Player List: {0}".format(self.UIplayerList)
 		print "Community Cards: {0}".format(self.UIcommunityCards)
 		print "Pots: {0}".format(self.UIpots)
@@ -129,6 +146,9 @@ class UI():
 		print "turn: {0}".format(self.UIturn)
 		
 	def getRaiseAmount(self):
+		"""
+		When the player hits the 'raise', this is called to determine what amount the player is raising by
+		"""
 		surfaceCopy = self.playArea.copy()
 		textBoxRect = pygame.Rect((self.playArea.get_width() / 2) - 100,self.playArea.get_height() - 50,200,20)
 		amount = inputbox.ask(self.playArea, "Amount", textBoxRect)
@@ -140,9 +160,16 @@ class UI():
 			return None
 			
 	def determineAmountToCall(self, player):
+		"""
+		Determines the amount the players has to call for use in visualisation
+		"""
 		return sum(self.UIcurrentBet) - sum(player.betAmount)
 		
 	def loop(self):
+		"""
+		PyGame main event loop. Detects if certain buttons are pressed by the player and takes action
+		accordingly
+		"""
 		while 1:
 			for event in pygame.event.get():
 			
@@ -152,20 +179,21 @@ class UI():
 					sys.exit()
 					
 				elif event.type == pygame.MOUSEBUTTONUP:
-					if event.button == 1:
-						if self.buttonCall.clicked(event.pos) == 1:
-							#UISocket.sendCommand(self.socket, 'call')
-							self.sockObj.sendCommand('call')
-						elif self.buttonRaise.clicked(event.pos) == 1:
-							r = self.getRaiseAmount()
-							if r != None:
-								bettingAmount = self.determineAmountToCall(self.UIplayerList[self.UIturn]) + r
-								if bettingAmount <= self.UIplayerList[self.UIturn].money:
-									#UISocket.sendCommand(self.socket, "raise:{0}".format(r))
-									self.sockObj.sendCommand("raise:{0}".format(r))
-						elif self.buttonFold.clicked(event.pos) == 1:
-							#UISocket.sendCommand(self.socket, 'fold')
-							self.sockObj.sendCommand('fold')
+					if self.seatno == self.UIturn:
+						if event.button == 1:
+							if self.buttonCall.clicked(event.pos) == 1:
+								#UISocket.sendCommand(self.socket, 'call')
+								self.sockObj.sendCommand('call')
+							elif self.buttonRaise.clicked(event.pos) == 1:
+								r = self.getRaiseAmount()
+								if r != None:
+									bettingAmount = self.determineAmountToCall(self.UIplayerList[self.UIturn]) + r
+									if bettingAmount <= self.UIplayerList[self.UIturn].money:
+										#UISocket.sendCommand(self.socket, "raise:{0}".format(r))
+										self.sockObj.sendCommand("raise:{0}".format(r))
+							elif self.buttonFold.clicked(event.pos) == 1:
+								#UISocket.sendCommand(self.socket, 'fold')
+								self.sockObj.sendCommand('fold')
 							
 				elif event.type == pygame.KEYDOWN:
 					if event.key == K_SPACE:
@@ -184,6 +212,9 @@ class UI():
 			self.fps.tick(10)
 	
 	def displayCommunityCards(self):
+		"""
+		Displays the community cards to all the players to the screen
+		"""
 		self.cardyoffset = 50
 		self.cardheight = UI.wH/2-self.cardyoffset
 		
@@ -202,6 +233,9 @@ class UI():
 		self.playArea.blit(self.card5.image, self.card5.rect)
 		
 	def displayCallInfo(self):
+		"""
+		Displays the amount that the player has to call. This is different for each client
+		"""
 		if self.UIplayerList != []:
 			
 			if self.displayCallInfoPrevRect != None:
@@ -215,6 +249,9 @@ class UI():
 			self.displayCallInfoPrevRect = (x, y, fontRender.get_width(), fontRender.get_height())
 			
 	def displayPot(self):
+		"""
+		Display the total pot amount that all players have contributed too
+		"""
 		if self.UIpots != []:
 			
 			if self.displayPotPrevRect != None:
@@ -227,7 +264,10 @@ class UI():
 			self.playArea.blit(fontRender, (x, y))
 			self.displayPotPrevRect = (x, y, fontRender.get_width(), fontRender.get_height())
 	
-	def layoutTest(self):
+	def layout(self):
+		"""
+		Setup the various 'seats' around the table for each player and adding the card placeholders for each seat
+		"""
 		self.displayCommunityCards()
 		self.displayCallInfo()
 		
@@ -376,12 +416,18 @@ class UISeat():
 		
 		
 	def setName(self, name):
+		"""
+		Sets the name of the players seat and displays it
+		"""
 		self.name = name
 		self._blitName()
 		self.seatsurface.blit(self.nameboxsurface, (self.avwidth, 0))
 		self.playArea.blit(self.seatsurface, self.seatrect)
 		
 	def setMoney(self, money):
+		"""
+		Sets the money of the players seat and displays it
+		"""
 		self.money = money
 		self._blitMoney()
 		self.seatsurface.blit(self.moneyboxsurface, (self.avwidth, self.avheight/2))
@@ -397,26 +443,37 @@ class UISeat():
 		self.turnMarker.fill((233,202,0))
 		
 	def addTurnMarker(self):
+		"""
+		Add a turn marker above the players seat indicating it is that player's turn
+		"""
 		self.playArea.blit(self.turnMarker, self.turnMarkerRect)
 		
 	def removeTurnMarker(self):
+		"""
+		Remove the turn marker from the players seat
+		"""
 		self.playArea.blit(self.backgroundSurface, self.turnMarkerRect, self.turnMarkerRect)
 		
 	def setCards(self, hand):
+		"""
+		Sets the cards to be displayed for each seat
+		"""
 		self.cards = hand
 		self._displayCards()
 		
 	def setAvatar(self, threshvalue, peakspermin):
+		"""
+		Sets the avatar colour to be displayed for each seat.
+		
+		An avatar can turn red if the ``threshvalue`` goes above 0 and can also be yellow or orange depending
+		on the amount indicated by ``peakspermin``. Usually what happens is that the avatar will flash red
+		once there is a peak, then after a few peaks, it will turn yellow for a while and if the peaks keep 
+		continuing, then will eventually turn orange for a long while
+		"""
 		print "threshvalue: {0} || peakspermin: {1}".format(threshvalue, peakspermin)
 		
 		if threshvalue > 0.0:
 			if threshvalue == 1.0:
-				self._changeAv("resources/images/avatar-purple.png")
-			elif threshvalue == 2.0:
-				self._changeAv("resources/images/avatar-yellow.png")
-			elif threshvalue == 3.0:
-				self._changeAv("resources/images/avatar-orange.png")
-			elif threshvalue == 4.0:
 				self._changeAv("resources/images/avatar-red.png")
 		else:
 			if peakspermin < 5:
@@ -427,6 +484,9 @@ class UISeat():
 				self._changeAv("resources/images/avatar-yellow.png")
 	
 	def setDefault(self):
+		"""
+		Set default values for name, money and cards
+		"""
 		self.setName('-')
 		self.setMoney(-1)
 		self.setCards([52, 52])
@@ -440,8 +500,11 @@ class UIButton(pygame.sprite.Sprite):
 		self.rect.center = rectcenter
 
     def clicked(self,pos):
-        if (self.rect.left < pos[0] < self.rect.right) and (self.rect.top < pos[1] < self.rect.bottom):
-            return 1 
+		"""
+		Determine if the player has clicked inside the area of the button
+		"""
+		if (self.rect.left < pos[0] < self.rect.right) and (self.rect.top < pos[1] < self.rect.bottom):
+			return 1 
 
 
 

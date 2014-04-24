@@ -1,6 +1,13 @@
 from Vicarious.Processors.Processor import Processor
 
 class ScalingProcessor(Processor):
+	"""
+	A scaling processor used with Vicarious
+	
+	It has a GUI where you can start baselining for min and max data values and then to stop baselining. This 
+	processor will scale all of the data values coming in to the range of -1 to 1. This is determined from the 
+	min and max values from baselining
+	"""
 	def __init__(self):
 		Processor.__init__(self, "ScalingProcessor", [("source", "source data to be scaled")], [("Scaled data")], [], self.InitUI)
 		self.oldmin = 0
@@ -12,6 +19,11 @@ class ScalingProcessor(Processor):
 		self.run()
 		
 	def process(self,timeStamp,values,queueNo):
+		"""
+		Overwritten function of the ``Processor`` class. Deals with incoming data values on the port chosen 
+		calls :func:`testMinMax` if the baselining is still running or calls :func:`scale` if the baselining 
+		has ended. Finally makes a call to `addProcessedValues` to send the data through to the outport
+		"""
 		datain = values[0]
 		curValue = float(datain)
 		if self.isBaselineRunning:
@@ -19,10 +31,14 @@ class ScalingProcessor(Processor):
 		
 		if self.hasBaselineEnded:
 			scaledValue = self.scale(curValue)
-			print scaledValue
+			#print scaledValue
 			self.addProcessedValues(scaledValue)
 		
 	def testMinMax(self, value):
+		"""
+		Determines if the ``value`` coming in has a larger value that the current max or a smaller value 
+		than the current min. If it does, it updates the min/max accordingly and updates the value in the gui
+		"""
 		if value > self.oldmax:
 			self.oldmax = value
 			self.maxBox.SetValue(str(value).encode('utf-8'))
@@ -31,11 +47,17 @@ class ScalingProcessor(Processor):
 			self.minBox.SetValue(str(value).encode('utf-8'))
 		
 	def scale(self, value):
+		"""
+		Algorithm to scale/normalize the value between a specific range
+		"""
 		oldscale = self.oldmax - self.oldmin
 		newscale = self.newmax - self.newmin
 		return (newscale * (value - self.oldmin) / oldscale) + self.newmin
 		
 	def InitUI(self, frame):
+		"""
+		Defines the GUI of the scaling processor
+		"""
 		import wx
 		frame.SetSize((200,200))
 		
@@ -89,10 +111,17 @@ class ScalingProcessor(Processor):
 		frame.Bind(wx.EVT_BUTTON, self.OnStopPress, id=stopButton.GetId())
 		
 	def OnStartPress(self, event):
+		"""
+		Bind event process for the GUI when the user presses the start button. Sets the gui label to 'on' and 
+		tells the object that the baselining is running
+		"""
 		self.onOffText.SetLabel('On')
 		self.isBaselineRunning = True
 		
 	def OnStopPress(self, event):
+		"""
+		Bind event for the stop button. Sets the gui label to 'off' and tells the object that the baselining has ended
+		"""
 		self.onOffText.SetLabel('Off')
 		self.isBaselineRunning = False
 		self.hasBaselineEnded = True

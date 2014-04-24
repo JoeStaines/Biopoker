@@ -30,8 +30,8 @@
     <process language="python" class="..\Processors\ThresholdProcessor.py" name="Threshold Processor">
         <parameter name="inHost">127.0.0.1</parameter>
         <parameter name="inPort">50007</parameter>
-        <parameter name="outport">50008</parameter>
-        <parameter name="defaultValues">0.25:1;0.5:2;0.75:3;1.0:4</parameter>
+        <parameter name="outport">50050</parameter>
+        <parameter name="defaultValues">0.75:1</parameter>
 		<parameter name="countrate">-1.0</parameter>
 		<parameter name="useAbsoluteValues">True</parameter>
 		<parameter name="startTime">0</parameter>

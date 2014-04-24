@@ -5,8 +5,36 @@ from BiodataConsumer import BiodataConsumer
 stateData = {}
 
 def socketListener(table, numplayers):
+	"""
+	Sets up the socket to listen in on a certain port. After a client has connected, it passes some messages
+	back and forth between the client to pass some data such as receiving the player name and sending the 
+	player seat.
+	
+	After that, hands over the connection socket to 2 separate threads: :func:`receiveCommand` and :func:`sendStateData`.
+	It then listens in for another client connection
+	"""
 	serversock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	print "IP Address is {0}".format(socket.gethostbyname(socket.gethostname()))
+	port = 50050
+	
+	hostanswer = raw_input("Do you want to run on locahost (for testing) [y/n]: ")
+	if hostanswer == 'y' or 'Y':
+		host = "127.0.0.1"
+	elif hostanswer == 'n' or 'N':
+		host = socket.gethostbyname(socket.gethostname())
+	else:
+		print "'y' or 'n' only"
+		sys.exit()
+		
+	sameportans = raw_input("All players use the same biodata port? (for testing) [y/n]: ")
+	if hostanswer == 'y' or 'Y':
+		isSamePort = True
+	elif hostanswer == 'n' or 'N':
+		isSamePort = False
+	else:
+		print "'y' or 'n' only"
+		sys.exit()
+		
+	print "IP Address of server {0}".format(host)
 	#serversock.bind((socket.gethostbyname(socket.gethostname()), 20000))
 	serversock.bind(("127.0.0.1", 20000))
 	serversock.listen(1)
@@ -22,7 +50,10 @@ def socketListener(table, numplayers):
 		if len(table.getPlayers()) == numplayers:
 			table.beginRound()
 		
-		consumer = BiodataConsumer("127.0.0.1", 50008, table, table.playerList[seatNum])
+		consumer = BiodataConsumer("127.0.0.1", port, table, table.playerList[seatNum])
+		if not isSamePort:
+			port += 1
+			
 		threading.Thread(target=consumer.run).start()
 		
 		sendSeatNumber(conn, seatNum)
@@ -32,6 +63,10 @@ def socketListener(table, numplayers):
 		
 				
 def receiveCommand(conn, table, seat):
+	"""
+	Runs in a threaded constant loop to catch any commands (call, raise, fold) that the client sends and 
+	pass the command onto the ``Table`` object so that it can process and update the game state
+	"""
 	cmddata = ''
 	
 	while 1:				
@@ -55,6 +90,10 @@ def receiveCommand(conn, table, seat):
 			
 			
 def sendStateData(conn, table, seat):
+	"""
+	Constantly sends the state data from the ``Table`` object through the socket to the client, so that the 
+	client can update it's visualisation
+	"""
 	delay = 0.1
 	begin = time.time()
 	table.setState()
@@ -83,6 +122,14 @@ def sendStateData(conn, table, seat):
 			time.sleep(0.05)
 	
 def recvInfo(conn, timeout):
+	"""
+	Code that wraps around ``socket.recv``. Will set the timeout of the socket to whatever is specified in 
+	``timeout``.
+	
+	This function has some protection from the standard ``socket.recv`` function, as it is agreed between UISocket.py and TableSocket.py an agreed delimiter that is prefixed to the message to determine the length of 
+	the message being sent. Using that length, it then goes round in a loop until it has enough characters in
+	the buffer to collect all of the message and return it
+	"""
 	conn.settimeout(timeout)
 	allData = None
 	buffer = ''
@@ -104,6 +151,10 @@ def recvInfo(conn, timeout):
 			return allData
 	
 def sendInfo(conn, data):
+	"""
+	Sends info through the socket while prefixing the length of the message plus the agreed upon delimiter 
+	defined in UISocket.py and TableSocket.py
+	"""
 	try:
 		lengthPrefix = str(len(data)).encode('utf-8') + ':#:'
 		payload = lengthPrefix + data
@@ -112,6 +163,9 @@ def sendInfo(conn, data):
 		raise
 	
 def sendSeatNumber(conn, seat):
+	"""
+	Sends the seat number through to the client
+	"""
 	# send seat number
 	seatStr = str(seat).encode('utf-8')
 	try:
@@ -137,6 +191,10 @@ def sendSeatNumber(conn, seat):
 		sys.exit()
 		
 def removeOtherPlayersCards(seat, playerlist):
+	"""
+	Using the ``seat`` number, it removes all of the other player's cards so that the client can only
+	see their cards. The rest will just be the back of the card
+	"""
 	for i, x in enumerate(playerlist):
 		if i != seat and x != None:
 			x.hand = [52, 52]
