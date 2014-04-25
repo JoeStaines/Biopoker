@@ -59,7 +59,7 @@ class ScalingProcessor(Processor):
 		Defines the GUI of the scaling processor
 		"""
 		import wx
-		frame.SetSize((200,200))
+		frame.SetSize((200,210))
 		
 		panel = wx.Panel(frame)
 		
@@ -76,6 +76,13 @@ class ScalingProcessor(Processor):
 		stopButton = wx.Button(panel, label='Stop Baselining', size=(170, 25))
 		hbox2.Add(stopButton)
 		vbox.Add(hbox2, flag=wx.LEFT | wx.RIGHT | wx.ALIGN_CENTRE, border=5)
+		
+		vbox.Add((-1, 5))
+		
+		hbox6 = wx.BoxSizer(wx.HORIZONTAL)
+		resetButton = wx.Button(panel, label='Reset', size=(170, 25))
+		hbox6.Add(resetButton)
+		vbox.Add(hbox6, flag=wx.LEFT | wx.RIGHT | wx.ALIGN_CENTRE, border=5)
 		
 		vbox.Add((-1, 10))
 		
@@ -109,6 +116,7 @@ class ScalingProcessor(Processor):
 		# Bind items
 		frame.Bind(wx.EVT_BUTTON, self.OnStartPress, id=startButton.GetId())
 		frame.Bind(wx.EVT_BUTTON, self.OnStopPress, id=stopButton.GetId())
+		frame.Bind(wx.EVT_BUTTON, self.OnResetPress, id=resetButton.GetId())
 		
 	def OnStartPress(self, event):
 		"""
@@ -125,5 +133,18 @@ class ScalingProcessor(Processor):
 		self.onOffText.SetLabel('Off')
 		self.isBaselineRunning = False
 		self.hasBaselineEnded = True
+		
+	def OnResetPress(self, event):
+		"""
+		Bind event for the reset button. Resets the max and min values and stops data from going through the 
+		processor
+		"""
+		self.oldmax = 0.0001
+		self.oldmin = -0.0001
+		self.maxBox.SetValue(str(self.oldmax).encode('utf-8'))
+		self.minBox.SetValue(str(self.oldmin).encode('utf-8'))
+		self.onOffText.SetLabel('Off')
+		self.isBaselineRunning = False
+		self.hasBaselineEnded = False
 		
 if __name__ == "__main__": ScalingProcessor()

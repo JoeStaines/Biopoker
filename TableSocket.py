@@ -49,6 +49,7 @@ def socketListener(table, numplayers):
 		seatNum = table.addPlayer(Player(namedata, 1000))
 		if len(table.getPlayers()) == numplayers:
 			table.beginRound()
+			threading.Thread(target=writeStatsToCSV, args=(table,)).start()
 		
 		consumer = BiodataConsumer("127.0.0.1", port, table, table.playerList[seatNum])
 		if not isSamePort:
@@ -120,6 +121,19 @@ def sendStateData(conn, table, seat):
 			begin = time.time()
 		else:
 			time.sleep(0.05)
+			
+def writeStatsToCSV(table):
+	"""
+	Writes various data about the game state to a csv file
+	"""
+	pathname = "C:\\Users\\Joe\\Desktop\\test\\" + time.strftime("%dth %b [%H][%M][%S]", time.localtime()) + ".csv"
+	players = table.getPlayers()
+	while True:
+		p1ppm = players[0].peaksPerMin
+		p2ppm = players[1].peaksPerMin
+		with open(pathname, 'a+') as f:
+			f.write(str(p1ppm) + "," + str(p2ppm) + "\n")
+		time.sleep(1)
 	
 def recvInfo(conn, timeout):
 	"""
