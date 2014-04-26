@@ -1,6 +1,6 @@
 <xml>
 	<process language="python" class="..\Collectors\QSensorCollector.py" name="QSensor1(M9)">
-        <parameter name="COM">COM17</parameter>
+        <parameter name="COM">COM16</parameter>
         <parameter name="outport">49994</parameter>
 		<channel name="GSR" num="4"/>
     </process>
@@ -30,7 +30,41 @@
 		<parameter name="startTime">0</parameter>
 		<parameter name="stopTime">-1</parameter>
         <parameter name="showGui">True</parameter>
-        <parameter name="name">GSR RoC Threshold Processor</parameter>
+        <parameter name="name">1 GSR RoC Threshold Processor</parameter>
+    </process>
+	
+	<process language="python" class="..\Collectors\QSensorCollector.py" name="QSensor1(M9)">
+        <parameter name="COM">COM17</parameter>
+        <parameter name="outport">49995</parameter>
+		<channel name="GSR" num="4"/>
+    </process>
+	
+	<process language="python" class="..\Processors\GSRProcessor.py" name="GSRProcessor1">
+        <parameter name="inHost">5@127.0.0.1</parameter>
+        <parameter name="inPort">49995</parameter>
+        <parameter name="outport">50016</parameter>
+		<parameter name="windowSize">1</parameter>
+    </process>
+	
+	<process language="python" class="..\..\..\..\..\ScalingProcessor.py" name="Scaling Processor">
+        <parameter name="inHost">127.0.0.1</parameter>
+        <parameter name="inPort">50016</parameter>
+        <parameter name="outport">50017</parameter>
+		<parameter name="showGui">True</parameter>
+    </process>
+	
+	
+    <process language="python" class="..\Processors\ThresholdProcessor.py" name="Threshold Processor">
+        <parameter name="inHost">127.0.0.1</parameter>
+        <parameter name="inPort">50017</parameter>
+        <parameter name="outport">50051</parameter>
+        <parameter name="defaultValues">0.7:1</parameter>
+		<parameter name="countrate">-1.0</parameter>
+		<parameter name="useAbsoluteValues">True</parameter>
+		<parameter name="startTime">0</parameter>
+		<parameter name="stopTime">-1</parameter>
+        <parameter name="showGui">True</parameter>
+        <parameter name="name">2 GSR RoC Threshold Processor</parameter>
     </process>
 
 

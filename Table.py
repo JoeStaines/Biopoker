@@ -1,6 +1,7 @@
 from CustomExceptions import *
 from SevenEval import *
 import random, math
+from collections import deque
 
 class Table():
 	
@@ -30,6 +31,8 @@ class Table():
 		self.curDealerSeatNo = 0
 		self.turn = 0
 		self.roundEndSeat = 0
+		self.roundNo = 0
+		self.eventQ = deque([], 100)
 		self.gameState = Table.PRE_FLOP
 		
 	def setState(self):
@@ -545,6 +548,7 @@ class Table():
 																		combined[6] )))
 			winners = self.getWinners(evaluations, i)
 			self.handOutMoney(winners, i)
+			self.eventQ.append(winners[0].name)
 	
 	
 	# ############ Game Loop Logic ############
@@ -592,6 +596,7 @@ class Table():
 		if len(self.getPlayers()) == 1:
 			self.isGameEnd = True
 		else:
+			self.roundNo += 1
 			self.determineBlinds()
 			self.collectSmallBlind()
 			self.collectBigBlind()

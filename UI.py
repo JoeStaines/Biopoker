@@ -476,11 +476,11 @@ class UISeat():
 			if threshvalue == 1.0:
 				self._changeAv("resources/images/avatar-red.png")
 		else:
-			if peakspermin < 5:
+			if peakspermin < 10:
 				self._changeAv("resources/images/avatar.png")
-			elif peakspermin >= 10:
+			elif peakspermin >= 20:
 				self._changeAv("resources/images/avatar-orange.png")
-			elif peakspermin >= 5:
+			elif peakspermin >= 10:
 				self._changeAv("resources/images/avatar-yellow.png")
 	
 	def setDefault(self):

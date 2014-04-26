@@ -17,18 +17,21 @@ def socketListener(table, numplayers):
 	port = 50050
 	
 	hostanswer = raw_input("Do you want to run on locahost (for testing) [y/n]: ")
-	if hostanswer == 'y' or 'Y':
+	if hostanswer == 'y' or hostanswer == 'Y':
 		host = "127.0.0.1"
-	elif hostanswer == 'n' or 'N':
+	elif hostanswer == 'n' or hostanswer == 'N':
 		host = socket.gethostbyname(socket.gethostname())
 	else:
 		print "'y' or 'n' only"
 		sys.exit()
 		
 	sameportans = raw_input("All players use the same biodata port? (for testing) [y/n]: ")
-	if hostanswer == 'y' or 'Y':
+	print sameportans == 'Y'
+	if sameportans == 'y' or sameportans == 'Y':
+		print "in ans y"
 		isSamePort = True
-	elif hostanswer == 'n' or 'N':
+	elif sameportans == 'n' or sameportans == 'N':
+		print "in ans"
 		isSamePort = False
 	else:
 		print "'y' or 'n' only"
@@ -51,8 +54,11 @@ def socketListener(table, numplayers):
 			table.beginRound()
 			threading.Thread(target=writeStatsToCSV, args=(table,)).start()
 		
+		print port
+		print isSamePort
 		consumer = BiodataConsumer("127.0.0.1", port, table, table.playerList[seatNum])
 		if not isSamePort:
+			print "in port"
 			port += 1
 			
 		threading.Thread(target=consumer.run).start()
@@ -126,13 +132,24 @@ def writeStatsToCSV(table):
 	"""
 	Writes various data about the game state to a csv file
 	"""
-	pathname = "C:\\Users\\Joe\\Desktop\\test\\" + time.strftime("%dth %b [%H][%M][%S]", time.localtime()) + ".csv"
+	pathname = "C:\\Users\\Joe\\Desktop\\test\\" + time.strftime("%b %dth [%H][%M][%S]", time.localtime()) + ".csv"
 	players = table.getPlayers()
 	while True:
 		p1ppm = players[0].peaksPerMin
 		p2ppm = players[1].peaksPerMin
+		pot = sum(table.pots)
+		if len(table.eventQ) > 0:
+			event = table.eventQ.popleft()
+		else:
+			event = "NULL"
+			
 		with open(pathname, 'a+') as f:
-			f.write(str(p1ppm) + "," + str(p2ppm) + "\n")
+			f.write(str(p1ppm) + "," + 
+				str(p2ppm) + "," + 
+				str(table.roundNo) + "," + 
+				str(pot) + "," +
+				event + 
+				"\n")
 		time.sleep(1)
 	
 def recvInfo(conn, timeout):
