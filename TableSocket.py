@@ -1,4 +1,4 @@
-import socket, sys, time, cPickle, threading, copy
+import socket, sys, time, cPickle, threading, copy, os
 from Player import Player
 from BiodataConsumer import BiodataConsumer
 
@@ -26,9 +26,7 @@ def socketListener(table, numplayers):
 		sys.exit()
 		
 	sameportans = raw_input("All players use the same biodata port? (for testing) [y/n]: ")
-	print sameportans == 'Y'
 	if sameportans == 'y' or sameportans == 'Y':
-		print "in ans y"
 		isSamePort = True
 	elif sameportans == 'n' or sameportans == 'N':
 		print "in ans"
@@ -54,11 +52,8 @@ def socketListener(table, numplayers):
 			table.beginRound()
 			threading.Thread(target=writeStatsToCSV, args=(table,)).start()
 		
-		print port
-		print isSamePort
 		consumer = BiodataConsumer("127.0.0.1", port, table, table.playerList[seatNum])
 		if not isSamePort:
-			print "in port"
 			port += 1
 			
 		threading.Thread(target=consumer.run).start()
@@ -132,7 +127,8 @@ def writeStatsToCSV(table):
 	"""
 	Writes various data about the game state to a csv file
 	"""
-	pathname = "C:\\Users\\Joe\\Desktop\\test\\" + time.strftime("%b %dth [%H][%M][%S]", time.localtime()) + ".csv"
+	#pathname = "C:\\Users\\Joe\\Desktop\\test\\" + time.strftime("%b %dth [%H][%M][%S]", time.localtime()) + ".csv"
+	pathname = os.path.abspath(".\\data") + "\\" + time.strftime("%b %dth [%H][%M][%S]", time.localtime()) + ".csv"
 	players = table.getPlayers()
 	while True:
 		p1ppm = players[0].peaksPerMin
