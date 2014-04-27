@@ -1080,6 +1080,7 @@ class TestSetState(TestTableSetUp):
 		self.table.pots = [10]
 		self.table.currentBet = [10]
 		self.turn = 0
+		self.isGameEnd = False
 		
 	def testSetState(self):
 		self.table.setState()
@@ -1087,7 +1088,8 @@ class TestSetState(TestTableSetUp):
 													'comcards': [0,1,2], \
 													'pots':		[10], \
 													'curbet':	[10], \
-													'turn':		0 })
+													'turn':		0, \
+													'isGameEnd': False})
 													
 class TestFoldIfInRemovePlayerList(TestTableSetUp):
 	def setUp(self):

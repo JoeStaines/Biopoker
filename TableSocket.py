@@ -134,17 +134,23 @@ def writeStatsToCSV(table):
 		p1ppm = players[0].peaksPerMin
 		p2ppm = players[1].peaksPerMin
 		pot = sum(table.pots)
-		if len(table.eventQ) > 0:
-			event = table.eventQ.popleft()
+		if len(table.potwinQ) > 0:
+			event = table.potwinQ.popleft()
 		else:
 			event = "NULL"
+		
+		if len(table.allinQ) > 0:
+			allin = table.allinQ.popleft()
+		else:
+			allin = "NULL"
 			
 		with open(pathname, 'a+') as f:
 			f.write(str(p1ppm) + "," + 
 				str(p2ppm) + "," + 
 				str(table.roundNo) + "," + 
 				str(pot) + "," +
-				event + 
+				event + "," +
+				allin +
 				"\n")
 		time.sleep(1)
 	

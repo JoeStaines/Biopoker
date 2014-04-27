@@ -32,7 +32,8 @@ class Table():
 		self.turn = 0
 		self.roundEndSeat = 0
 		self.roundNo = 0
-		self.eventQ = deque([], 100)
+		self.potwinQ = deque([], 100)
+		self.allinQ = deque([], 100)
 		self.gameState = Table.PRE_FLOP
 		
 	def setState(self):
@@ -156,6 +157,16 @@ class Table():
 			return 0
 		else:
 			return -1
+			
+	def removePlayerMoney(self, player, amount):
+		"""
+		Invoke the function in the ``Player`` class to remove the money from the `player` specified by 
+		the `amount`. Then checks if the player's amount is 0 and if it is, will report to the all in 
+		event queue that `player` went all in
+		"""
+		player.removeMoney(amount)
+		if player.money == 0:
+			self.allinQ.append(player.name)
 			
 	def collectAnte(self):
 		"""
@@ -287,7 +298,8 @@ class Table():
 			if player.money < self.currentBet[-1]:
 				self._slicePot(len(self.pots)-1, player)
 			else: # TODO: Might need to put something here that expresses when someone raises but will put them all in
-				player.removeMoney(amount)
+				#player.removeMoney(amount)
+				self.removePlayerMoney(player, amount)
 				self.pots[-1] = self.pots[-1] + amount
 				player.betAmount[-1] = player.betAmount[-1] + amount
 				self.currentBet[-1] = player.betAmount[-1]
@@ -548,7 +560,7 @@ class Table():
 																		combined[6] )))
 			winners = self.getWinners(evaluations, i)
 			self.handOutMoney(winners, i)
-			self.eventQ.append(winners[0].name)
+			self.potwinQ.append(winners[0].name)
 	
 	
 	# ############ Game Loop Logic ############
