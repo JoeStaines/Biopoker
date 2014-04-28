@@ -127,6 +127,7 @@ class Table():
 		Adds a new side pot
 		"""
 		self.pots.append(0)
+		self.currentBet.append(0)
 		
 	def addToPot(self, amount, index):
 		"""
@@ -283,26 +284,44 @@ class Table():
 		Steps through all the side bets in turn and pays the current bet for each side pot. If a player
 		cannot pay, then the another side pot is created using :func:`_slicePot`
 		"""
-		rangestart = len(player.betAmount) if len(player.betAmount) >= 0 else 0
-		for i in range(rangestart, len(self.pots)):
-			if player.money < self.currentBet[i]:
-				self._slicePot(i, player)
+		
+		# First, step through all the pots that player is apart of to check for consistency and
+		# to call to any pots that player is apart of but doesn't met the current bet because others
+		# have raised ahead. Usually happens on the last pot the player is apart of
+		for i in range(0, len(player.betAmount)):
+			if player.betAmount[i] < self.currentBet[i]:
+				sidePotToCall = self.currentBet[i] - player.betAmount[i]
+				if player.money < sidePotToCall:
+					self._slicePot(i, player)
+					return
+				else:
+					self.removePlayerMoney(player, sidePotToCall)
+					self.pots[i] = self.pots[i] + sidePotToCall
+					player.betAmount[i] = player.betAmount[i] + sidePotToCall
+					amount = amount - sidePotToCall
+		
+		# Step through all pots that the player has not been apart of yet, and create them for the player
+		# when the money is taken from that specific pot
+		for j in range(len(player.betAmount), len(self.currentBet)):
+			if player.money < self.currentBet[j]:
+				self._slicePot(j, player)
 				return
 			else:
-				player.removeMoney(self.currentBet[i])
-				self.pots[i] = self.pots[i] + self.currentBet[i]
-				player.betAmount.append(self.currentBet[i])
-				amount = amount - self.currentBet[i]
+				self.removePlayerMoney(player, self.currentBet[j])
+				self.pots[j] = self.pots[j] + self.currentBet[j]
+				player.betAmount.append(self.currentBet[j])
+				amount = amount - self.currentBet[j]
 				
+		# Handle any excess 'amount' for players who are raising. Can still go all in on a raise so need to add a 
+		# new side pot if that happens, so other players can bet ahead while keeping the side pots
+		# consistent
 		if amount > 0:
-			if player.money < self.currentBet[-1]:
-				self._slicePot(len(self.pots)-1, player)
-			else: # TODO: Might need to put something here that expresses when someone raises but will put them all in
-				#player.removeMoney(amount)
-				self.removePlayerMoney(player, amount)
-				self.pots[-1] = self.pots[-1] + amount
-				player.betAmount[-1] = player.betAmount[-1] + amount
-				self.currentBet[-1] = player.betAmount[-1]
+			self.removePlayerMoney(player, amount)
+			self.pots[-1] = self.pots[-1] + amount
+			player.betAmount[-1] = player.betAmount[-1] + amount
+			self.currentBet[-1] = player.betAmount[-1]
+			if player.money == 0:
+				self.addSidePot()
 				
 	def _slicePot(self, i, player):
 		"""
@@ -412,8 +431,25 @@ class Table():
 		"""
 		Determine the initial big and small blind amounts
 		"""
-		self.smallBlind = 5
-		self.bigBlind = 10
+		if self.roundNo <= 1:
+			self.smallBlind = 5
+			self.bigBlind = 10
+		elif self.roundNo == 2:
+			self.smallBlind = 10
+			self.bigBlind = 20
+		elif self.roundNo == 3:
+			self.smallBlind = 20
+			self.bigBlind = 40
+		elif self.roundNo == 4:
+			self.smallBlind = 40
+			self.bigBlind = 80
+		elif self.roundNo == 5:
+			self.smallBlind = 80
+			self.bigBlind = 160
+		elif self.roundNo >= 6:
+			self.smallBlind = 160
+			self.bigBlind = 320
+			
 		
 	def call(self, player):
 		"""
@@ -426,9 +462,11 @@ class Table():
 		"""
 		Raises the bet. The raise bet is the value returned from :func:`determineAmountToCall` + ``amount``
 		"""
-		_, self.roundEndSeat = self.findNthPlayerFromSeat(self.turn, self.noOfPlayers()-1)
-		self.makeBet(player, self.determineAmountToCall(player)+amount)
-		self.setState()
+		fullamount = self.determineAmountToCall(player)+amount
+		if amount >= sum(self.currentBet) or fullamount == player.money:
+			_, self.roundEndSeat = self.findNthPlayerFromSeat(self.turn, self.noOfPlayers()-1)
+			self.makeBet(player, self.determineAmountToCall(player)+amount)
+			self.setState()
 		
 	def fold(self, player):
 		"""

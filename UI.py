@@ -163,6 +163,7 @@ class UI():
 		"""
 		Determines the amount the players has to call for use in visualisation
 		"""
+		print "player bet amount: {0} || cur bet amount: {1}".format(player.betAmount, self.UIcurrentBet)
 		return sum(self.UIcurrentBet) - sum(player.betAmount)
 		
 	def loop(self):
@@ -470,7 +471,7 @@ class UISeat():
 		once there is a peak, then after a few peaks, it will turn yellow for a while and if the peaks keep 
 		continuing, then will eventually turn orange for a long while
 		"""
-		print "threshvalue: {0} || peakspermin: {1}".format(threshvalue, peakspermin)
+		#print "threshvalue: {0} || peakspermin: {1}".format(threshvalue, peakspermin)
 		
 		if threshvalue > 0.0:
 			if threshvalue == 1.0:
