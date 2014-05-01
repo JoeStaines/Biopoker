@@ -80,6 +80,7 @@ def receiveCommand(conn, table, seat):
 			sys.exit()
 			
 		if cmddata != '':
+			print "received command {0} from {1}".format(cmddata, table.playerList[seat].name)
 			if seat == table.turn:
 				left, _, right = cmddata.partition(':')
 				if left == 'call':

@@ -28,6 +28,7 @@ class Table():
 		self.ante = 0
 		self.bigBlind = 0
 		self.smallBlind = 0
+		self.curRaise = 0
 		self.curDealerSeatNo = 0
 		self.turn = 0
 		self.roundEndSeat = 0
@@ -463,8 +464,9 @@ class Table():
 		Raises the bet. The raise bet is the value returned from :func:`determineAmountToCall` + ``amount``
 		"""
 		fullamount = self.determineAmountToCall(player)+amount
-		if amount >= sum(self.currentBet) or fullamount == player.money:
+		if amount >= self.curRaise or fullamount == player.money:
 			_, self.roundEndSeat = self.findNthPlayerFromSeat(self.turn, self.noOfPlayers()-1)
+			self.curRaise = amount
 			self.makeBet(player, self.determineAmountToCall(player)+amount)
 			self.setState()
 		
@@ -486,17 +488,20 @@ class Table():
 		if self.gameState == Table.PRE_FLOP:
 			self.gameState = Table.FLOP
 			self.dealCommunity(3)
+			self.curRaise = self.bigBlind
 			player = self.findNextSuitablePlayer(self.curDealerSeatNo)
 			_, self.turn = self.findNextSuitablePlayer(self.curDealerSeatNo)
 			self.roundEndSeat = self.curDealerSeatNo
 		elif self.gameState == Table.FLOP:
 			self.gameState = Table.TURN
 			self.dealCommunity(1)
+			self.curRaise = self.bigBlind
 			_, self.turn = self.findNextSuitablePlayer(self.curDealerSeatNo)
 			self.roundEndSeat = self.curDealerSeatNo
 		elif self.gameState == Table.TURN:
 			self.gameState = Table.RIVER
 			self.dealCommunity(1)
+			self.curRaise = self.bigBlind
 			_, self.turn = self.findNextSuitablePlayer(self.curDealerSeatNo)
 			self.roundEndSeat = self.curDealerSeatNo
 		elif self.gameState == Table.RIVER:
@@ -641,6 +646,7 @@ class Table():
 		self.gameState = Table.PRE_FLOP
 		for p in self.getPlayers():
 			if p.money <= 0:
+				print p.name
 				self.playerRemoveList.append(p)
 		self.removeFromPlayerList()
 		if len(self.getPlayers()) == 1:
@@ -648,6 +654,7 @@ class Table():
 		else:
 			self.roundNo += 1
 			self.determineBlinds()
+			self.curRaise = self.bigBlind
 			self.collectSmallBlind()
 			self.collectBigBlind()
 			self.deal()

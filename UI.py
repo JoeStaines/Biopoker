@@ -132,7 +132,9 @@ class UI():
 		else:
 			for i, x in enumerate(self.UIplayerList):
 				if x != None:
-					print "Player {0} has won".format(i)
+					x.money = "Winner"
+					self.seats[i].setMoney(x.money)
+					print "{0} has won".format(x.name)
 					break
 		
 	def displayState(self):
@@ -163,7 +165,6 @@ class UI():
 		"""
 		Determines the amount the players has to call for use in visualisation
 		"""
-		print "player bet amount: {0} || cur bet amount: {1}".format(player.betAmount, self.UIcurrentBet)
 		return sum(self.UIcurrentBet) - sum(player.betAmount)
 		
 	def loop(self):
